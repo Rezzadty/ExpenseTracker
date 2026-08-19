@@ -1,8 +1,62 @@
-# Welcome to your Expo app 👋
+# ExpenseTracker
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A personal expense tracking mobile app to help you monitor daily spending, categorize expenses, and understand where your money goes.
 
-## Get started
+## Purpose
+
+This app is built as a personal finance tool to:
+
+- Track daily expenses with amount, category, and notes
+- View today's spending at a glance
+- Break down spending by category (Food, Transport, Shopping, Health, Bills, Fun, Other)
+- Filter and browse expense history
+- Visualize spending distribution with progress bars
+
+## Tech Stack
+
+| Layer      | Technology                                                                            |
+| ---------- | ------------------------------------------------------------------------------------- |
+| Framework  | [Expo](https://expo.dev) (SDK 57)                                                     |
+| Language   | TypeScript                                                                            |
+| Navigation | [Expo Router](https://docs.expo.dev/router/introduction/) (file-based routing)        |
+| UI         | React Native (0.86)                                                                   |
+| Font       | [DM Sans](https://fonts.google.com/specimen/DM+Sans) via `@expo-google-fonts/dm-sans` |
+| Animations | React Native Reanimated                                                               |
+| Gestures   | React Native Gesture Handler                                                          |
+| Linting    | ESLint with `eslint-config-expo`                                                      |
+
+### Not yet integrated (planned)
+
+- **PostgreSQL** — for cloud database and data persistence
+- **Charts library** — for spending trends and analytics
+
+## Design System
+
+The app uses a custom dark theme called **"Midnight Mint"**:
+
+- Dark background (`#0B0F0E`) with layered surfaces for depth
+- Accent color: mint green (`#00D9A3`)
+- 7 distinct category colors for visual clarity
+- DM Sans typography throughout
+- 4px base spacing grid, 20px card radius, pill-shaped chips
+
+## Project Structure
+
+```
+src/
+  app/              # Screens (file-based routing)
+    _layout.tsx      # Root layout — font loading, splash screen
+    index.tsx        # Dashboard screen
+  components/       # Reusable UI components
+    themed-text.tsx  # Text with typography presets
+    themed-view.tsx  # View with surface depth layers
+  constants/
+    theme.ts         # All design tokens (colors, fonts, spacing, radii, shadows)
+  store/
+    expenses.ts      # In-memory expense state (hook-based)
+```
+
+## Getting Started
 
 1. Install dependencies
 
@@ -16,41 +70,22 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+3. Open on your device using:
+   - [Expo Go](https://expo.dev/go)
+   - [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
+   - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
+   - [Development build](https://docs.expo.dev/develop/development-builds/introduction/)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Scripts
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+| Command           | Description           |
+| ----------------- | --------------------- |
+| `npm start`       | Start Expo dev server |
+| `npm run android` | Start on Android      |
+| `npm run ios`     | Start on iOS          |
+| `npm run web`     | Start on web          |
+| `npm run lint`    | Run ESLint            |
 
-## Get a fresh project
+## Current Status
 
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+**In development** — Dashboard screen is functional with in-memory data. Persistence, additional screens, and navigation are coming next.
