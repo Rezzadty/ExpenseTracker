@@ -1,24 +1,55 @@
-import { ThemedText } from '@/components/ui/themed-text';
-import { ThemedView } from '@/components/ui/themed-view';
-import { Navbar } from '@/components/navigation/navbar';
-import { SpendingCard } from '@/components/dashboard/spending-card';
-import { BottomTabBar } from '@/components/navigation/bottom-tab-bar';
-import { AddExpenseModal } from '@/components/modals/add-expense-modal';
-import { SetBudgetModal } from '@/components/modals/set-budget-modal';
-import { ExpenseRow } from '@/components/dashboard/expense-row';
-import { CategoryBar } from '@/components/dashboard/category-bar';
-import { Colors, Fonts, Radius, Spacing, type Category } from '@/constants/theme';
-import { useExpenses } from '@/store/expenses';
-import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { CategoryBar } from "@/components/dashboard/category-bar";
+import { ExpenseRow } from "@/components/dashboard/expense-row";
+import { SpendingCard } from "@/components/dashboard/spending-card";
+import { AddExpenseModal } from "@/components/modals/add-expense-modal";
+import { SetBudgetModal } from "@/components/modals/set-budget-modal";
+import { Navbar } from "@/components/navigation/navbar";
+import { ThemedText } from "@/components/ui/themed-text";
+import { ThemedView } from "@/components/ui/themed-view";
+import {
+  Colors,
+  Fonts,
+  Radius,
+  Spacing,
+  type Category,
+} from "@/constants/theme";
+import { useDashboard } from "@/hooks/use-dashboard";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-const CATEGORIES: ('All' | Category)[] = ['All', 'Food', 'Transport', 'Shopping', 'Health', 'Bills', 'Fun', 'Other'];
+const CATEGORIES: ("All" | Category)[] = [
+  "All",
+  "Food",
+  "Transport",
+  "Shopping",
+  "Health",
+  "Bills",
+  "Fun",
+  "Other",
+];
 
-function CategoryChip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+function CategoryChip({
+  label,
+  selected,
+  onPress,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+}) {
   return (
-    <Pressable onPress={onPress} style={[styles.chip, selected ? styles.chipSelected : styles.chipUnselected]}>
-      <ThemedText type="caption" color={selected ? 'accent' : 'textSecondary'} style={{ fontFamily: Fonts.sansSemiBold, fontWeight: '600' }}>
+    <Pressable
+      onPress={onPress}
+      style={[
+        styles.chip,
+        selected ? styles.chipSelected : styles.chipUnselected,
+      ]}
+    >
+      <ThemedText
+        type="caption"
+        color={selected ? "accent" : "textSecondary"}
+        style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}
+      >
         {label}
       </ThemedText>
     </Pressable>
@@ -26,62 +57,145 @@ function CategoryChip({ label, selected, onPress }: { label: string; selected: b
 }
 
 export default function DashboardScreen() {
-  const { expenses, addExpense, deleteExpense, todaySpent, byCategory } = useExpenses();
-  const [filter, setFilter] = useState<'All' | Category>('All');
-  const [expanded, setExpanded] = useState(false);
-  const [showAddExpense, setShowAddExpense] = useState(false);
-  const [showBudget, setShowBudget] = useState(false);
-
-  const maxCategory = useMemo(() => Math.max(...Object.values(byCategory), 0), [byCategory]);
-  const filtered = useMemo(() => (filter === 'All' ? expenses : expenses.filter((e) => e.category === filter)), [expenses, filter]);
-  const visible = useMemo(() => (expanded ? filtered : filtered.slice(0, 4)), [filtered, expanded]);
+  const {
+    addExpense,
+    deleteExpense,
+    todaySpent,
+    byCategory,
+    filter,
+    setFilter,
+    expanded,
+    setExpanded,
+    showAddExpense,
+    setShowAddExpense,
+    showBudget,
+    setShowBudget,
+    maxCategory,
+    filtered,
+    visible,
+  } = useDashboard();
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safe} edges={['top']}>
+      <SafeAreaView style={styles.safe} edges={["top"]}>
         <Navbar />
-        <ScrollView contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+        >
           <SpendingCard todaySpent={todaySpent} />
 
           <View style={styles.actionRow}>
-            <Pressable style={styles.actionBtn} onPress={() => setShowAddExpense(true)}>
-              <ThemedText type="body" color="textOnAccent" style={{ fontSize: 18, marginRight: Spacing.sm }}>+</ThemedText>
-              <ThemedText type="body" color="textOnAccent" style={{ fontFamily: Fonts.sansSemiBold, fontWeight: '600' }}>Add Expense</ThemedText>
+            <Pressable
+              style={styles.actionBtn}
+              onPress={() => setShowAddExpense(true)}
+            >
+              <ThemedText
+                type="body"
+                color="textOnAccent"
+                style={{ fontSize: 18, marginRight: Spacing.sm }}
+              >
+                +
+              </ThemedText>
+              <ThemedText
+                type="body"
+                color="textOnAccent"
+                style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}
+              >
+                Add Expense
+              </ThemedText>
             </Pressable>
-            <Pressable style={[styles.actionBtn, styles.actionBtnOutline]} onPress={() => setShowBudget(true)}>
-              <ThemedText type="body" color="accent" style={{ fontSize: 18, marginRight: Spacing.sm }}>⊘</ThemedText>
-              <ThemedText type="body" color="accent" style={{ fontFamily: Fonts.sansSemiBold, fontWeight: '600' }}>Set Budget</ThemedText>
+            <Pressable
+              style={[styles.actionBtn, styles.actionBtnOutline]}
+              onPress={() => setShowBudget(true)}
+            >
+              <ThemedText
+                type="body"
+                color="accent"
+                style={{ fontSize: 18, marginRight: Spacing.sm }}
+              >
+                ⊘
+              </ThemedText>
+              <ThemedText
+                type="body"
+                color="accent"
+                style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}
+              >
+                Set Budget
+              </ThemedText>
             </Pressable>
           </View>
 
           <ThemedView surface="surface" style={styles.card}>
-            <ThemedText type="sectionTitle" color="textSecondary" style={{ marginBottom: Spacing.base }}>Outcome Statistics</ThemedText>
-            {(Object.entries(byCategory) as [Category, number][]).map(([cat, amt]) => (
-              <CategoryBar key={cat} category={cat} amount={amt} max={maxCategory} />
-            ))}
+            <ThemedText
+              type="sectionTitle"
+              color="textSecondary"
+              style={{ marginBottom: Spacing.base }}
+            >
+              Outcome Statistics
+            </ThemedText>
+            {(Object.entries(byCategory) as [Category, number][]).map(
+              ([cat, amt]) => (
+                <CategoryBar
+                  key={cat}
+                  category={cat}
+                  amount={amt}
+                  max={maxCategory}
+                />
+              ),
+            )}
           </ThemedView>
 
           <View style={styles.chipRow}>
             {CATEGORIES.map((c) => (
-              <CategoryChip key={c} label={c} selected={filter === c} onPress={() => setFilter(c)} />
+              <CategoryChip
+                key={c}
+                label={c}
+                selected={filter === c}
+                onPress={() => setFilter(c)}
+              />
             ))}
           </View>
 
-          <ThemedText type="sectionTitle" color="textSecondary" style={{ marginBottom: Spacing.md }}>Recent Expenses</ThemedText>
+          <ThemedText
+            type="sectionTitle"
+            color="textSecondary"
+            style={{ marginBottom: Spacing.md }}
+          >
+            Recent Expenses
+          </ThemedText>
 
           {visible.length === 0 ? (
-            <View style={{ paddingVertical: Spacing.xxl, alignItems: 'center' }}>
-              <ThemedText type="body" color="textMuted">No expenses found</ThemedText>
+            <View
+              style={{ paddingVertical: Spacing.xxl, alignItems: "center" }}
+            >
+              <ThemedText type="body" color="textMuted">
+                No expenses found
+              </ThemedText>
             </View>
           ) : (
             <>
               {visible.map((item) => (
-                <ExpenseRow key={item.id} item={item} onDelete={deleteExpense} />
+                <ExpenseRow
+                  key={item.id}
+                  item={item}
+                  onDelete={deleteExpense}
+                />
               ))}
               {filtered.length > 4 && (
-                <Pressable style={styles.seeAllBtn} onPress={() => setExpanded((v) => !v)}>
-                  <ThemedText type="body" color="accent" style={{ fontFamily: Fonts.sansSemiBold, fontWeight: '600' }}>
-                    {expanded ? 'Show Less' : `See All (${filtered.length})`}
+                <Pressable
+                  style={styles.seeAllBtn}
+                  onPress={() => setExpanded((v) => !v)}
+                >
+                  <ThemedText
+                    type="body"
+                    color="accent"
+                    style={{
+                      fontFamily: Fonts.sansSemiBold,
+                      fontWeight: "600",
+                    }}
+                  >
+                    {expanded ? "Show Less" : `See All (${filtered.length})`}
                   </ThemedText>
                 </Pressable>
               )}
@@ -90,9 +204,15 @@ export default function DashboardScreen() {
         </ScrollView>
       </SafeAreaView>
 
-      <BottomTabBar />
-      <AddExpenseModal visible={showAddExpense} onClose={() => setShowAddExpense(false)} onSave={addExpense} />
-      <SetBudgetModal visible={showBudget} onClose={() => setShowBudget(false)} />
+      <AddExpenseModal
+        visible={showAddExpense}
+        onClose={() => setShowAddExpense(false)}
+        onSave={addExpense}
+      />
+      <SetBudgetModal
+        visible={showBudget}
+        onClose={() => setShowBudget(false)}
+      />
     </ThemedView>
   );
 }
@@ -101,24 +221,49 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   safe: { flex: 1 },
   listContent: { padding: Spacing.base, paddingBottom: 100 },
-  actionRow: { flexDirection: 'row', gap: Spacing.md, marginBottom: Spacing.xl },
+  actionRow: {
+    flexDirection: "row",
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
   actionBtn: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: Colors.accent,
     paddingVertical: Spacing.md,
     borderRadius: Radius.button,
   },
-  actionBtnOutline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: Colors.accent },
-  card: { borderRadius: Radius.card, padding: Spacing.lg, marginBottom: Spacing.xl },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm, marginBottom: Spacing.xl },
-  chip: { paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderRadius: Radius.chip },
+  actionBtnOutline: {
+    backgroundColor: "transparent",
+    borderWidth: 1.5,
+    borderColor: Colors.accent,
+  },
+  card: {
+    borderRadius: Radius.card,
+    padding: Spacing.lg,
+    marginBottom: Spacing.xl,
+  },
+  chipRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: Spacing.sm,
+    marginBottom: Spacing.xl,
+  },
+  chip: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.chip,
+  },
   chipSelected: { backgroundColor: Colors.accentSoft },
-  chipUnselected: { backgroundColor: 'transparent', borderWidth: 1, borderColor: Colors.border },
+  chipUnselected: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
   seeAllBtn: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: Spacing.md,
     marginTop: Spacing.sm,
     backgroundColor: Colors.surface,
