@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/ui/themed-text';
 import { CategoryColors, Colors, Fonts, Radius, Spacing } from '@/constants/theme';
-import type { Expense } from '@/store/expenses';
+import type { Expense } from '@/types/expense';
 import { formatMoney } from '@/utils/format';
 
 export function ExpenseRow({ item, onDelete }: { item: Expense; onDelete: (id: string) => void }) {

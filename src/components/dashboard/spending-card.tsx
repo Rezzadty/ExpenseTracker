@@ -1,8 +1,7 @@
-import { StyleSheet, View } from 'react-native';
-import { ThemedText } from '@/components/ui/themed-text';
-import { Colors, Radius, Spacing } from '@/constants/theme';
-import { formatDate } from '@/utils/format';
-import { formatMoney } from '@/utils/format';
+import { ThemedText } from "@/components/ui/themed-text";
+import { Colors, Radius, Spacing } from "@/constants/theme";
+import { formatDate, formatMoney } from "@/utils/format";
+import { StyleSheet, View } from "react-native";
 
 export function SpendingCard({ todaySpent }: { todaySpent: number }) {
   return (
@@ -10,7 +9,11 @@ export function SpendingCard({ todaySpent }: { todaySpent: number }) {
       <ThemedText type="sectionTitle" color="accent">
         {formatDate()}
       </ThemedText>
-      <ThemedText type="body" color="textSecondary" style={{ marginTop: Spacing.sm }}>
+      <ThemedText
+        type="body"
+        color="textSecondary"
+        style={{ marginTop: Spacing.sm }}
+      >
         Today Spending
       </ThemedText>
       <View style={styles.spendingRow}>
@@ -28,16 +31,12 @@ const styles = StyleSheet.create({
     borderRadius: Radius.card,
     padding: Spacing.lg,
     marginBottom: Spacing.xl,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    elevation: 12,
+    boxShadow: "0px 8px 16px rgba(0,0,0,0.35)",
   },
   spendingRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
     marginTop: Spacing.sm,
   },
 });

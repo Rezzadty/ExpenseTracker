@@ -1,26 +1,43 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { usePathname, useRouter } from 'expo-router';
 import { ThemedText } from '@/components/ui/themed-text';
 import { Colors, Fonts, Spacing } from '@/constants/theme';
 
+const icons = {
+  dashboard: require('@/assets/icons/dasboard_icon.png'),
+  expenses: require('@/assets/icons/expense_icon.png'),
+  statistics: require('@/assets/icons/statistics_icon.png'),
+  settings: require('@/assets/icons/settings_icon.png'),
+};
+
+const tabs = [
+  { key: '/', icon: icons.dashboard, label: 'Dashboard' },
+  { key: '/expenses', icon: icons.expenses, label: 'Expenses' },
+  { key: '/statistics', icon: icons.statistics, label: 'Statistics' },
+  { key: '/settings', icon: icons.settings, label: 'Settings' },
+] as const;
+
 export function BottomTabBar() {
+  const pathname = usePathname();
+  const router = useRouter();
+
   return (
     <View style={styles.bottomTab}>
-      <Pressable style={styles.tabItem}>
-        <ThemedText type="caption" color="accent" style={{ fontSize: 20 }}>▣</ThemedText>
-        <ThemedText type="caption" color="accent" style={{ fontFamily: Fonts.sansSemiBold, fontWeight: '600' }}>Dashboard</ThemedText>
-      </Pressable>
-      <Pressable style={styles.tabItem}>
-        <ThemedText type="caption" color="textMuted" style={{ fontSize: 20 }}>₿</ThemedText>
-        <ThemedText type="caption" color="textMuted">Expenses</ThemedText>
-      </Pressable>
-      <Pressable style={styles.tabItem}>
-        <ThemedText type="caption" color="textMuted" style={{ fontSize: 20 }}>◔</ThemedText>
-        <ThemedText type="caption" color="textMuted">Statistics</ThemedText>
-      </Pressable>
-      <Pressable style={styles.tabItem}>
-        <ThemedText type="caption" color="textMuted" style={{ fontSize: 20 }}>⚙</ThemedText>
-        <ThemedText type="caption" color="textMuted">Settings</ThemedText>
-      </Pressable>
+      {tabs.map((tab) => {
+        const active = pathname === tab.key;
+        return (
+          <Pressable key={tab.key} style={styles.tabItem} onPress={() => router.push(tab.key as any)}>
+            <Image source={tab.icon} style={styles.icon} resizeMode="contain" tintColor={active ? Colors.accent : Colors.textMuted} />
+            <ThemedText
+              type="caption"
+              color={active ? 'accent' : 'textMuted'}
+              style={active ? { fontFamily: Fonts.sansSemiBold, fontWeight: '600' } : undefined}
+            >
+              {tab.label}
+            </ThemedText>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
@@ -39,5 +56,9 @@ const styles = StyleSheet.create({
   tabItem: {
     alignItems: 'center',
     gap: 2,
+  },
+  icon: {
+    width: 20,
+    height: 20,
   },
 });
