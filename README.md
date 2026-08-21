@@ -44,16 +44,12 @@ The app uses a custom dark theme called **"Midnight Mint"**:
 
 ```
 src/
-  app/              # Screens (file-based routing)
-    _layout.tsx      # Root layout — font loading, splash screen
-    index.tsx        # Dashboard screen
-  components/       # Reusable UI components
-    themed-text.tsx  # Text with typography presets
-    themed-view.tsx  # View with surface depth layers
-  constants/
-    theme.ts         # All design tokens (colors, fonts, spacing, radii, shadows)
-  store/
-    expenses.ts      # In-memory expense state (hook-based)
+  app/         # Screens and navigation routes
+  components/  # UI components grouped by feature
+  constants/   # Design tokens (theme and styles)
+  hooks/       # Custom hooks (business logic and state)
+  types/       # TypeScript type definitions
+  utils/       # Helper utilities (formatting etc)
 ```
 
 ## Getting Started
@@ -88,4 +84,4 @@ src/
 
 ## Current Status
 
-**In development** — Dashboard screen is functional with in-memory data. Persistence, additional screens, and navigation are coming next.
+**In development** — Dashboard and Statistics screens are functional with shared in-memory data. Persistence and remote APIs are coming next.
