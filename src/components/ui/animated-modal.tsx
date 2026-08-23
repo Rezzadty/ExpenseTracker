@@ -4,8 +4,6 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   FadeIn,
   FadeOut,
-  ZoomIn,
-  ZoomOut,
 } from 'react-native-reanimated';
 import { Spacing } from '@/constants/theme';
 
@@ -27,8 +25,8 @@ export function AnimatedModal({ visible, onClose, children }: Props) {
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
       </Animated.View>
       <Animated.View
-        entering={ZoomIn.duration(350).springify().damping(18).stiffness(180)}
-        exiting={ZoomOut.duration(200)}
+        entering={FadeIn.duration(300)}
+        exiting={FadeOut.duration(200)}
         style={styles.content}
       >
         {children}

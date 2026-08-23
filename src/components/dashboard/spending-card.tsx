@@ -1,12 +1,12 @@
-import { StyleSheet, View } from "react-native";
-import Animated, { FadeInUp } from "react-native-reanimated";
 import { ThemedText } from "@/components/ui/themed-text";
 import { Colors, Radius, Spacing } from "@/constants/theme";
 import { formatDate, formatMoney } from "@/utils/format";
+import { StyleSheet, View } from "react-native";
+import Animated from "react-native-reanimated";
 
 export function SpendingCard({ todaySpent }: { todaySpent: number }) {
   return (
-    <Animated.View entering={FadeInUp.duration(400).springify().damping(18)} style={styles.spendingCard}>
+    <Animated.View style={styles.spendingCard}>
       <ThemedText type="sectionTitle" color="accent">
         {formatDate()}
       </ThemedText>

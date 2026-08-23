@@ -11,6 +11,7 @@ export function CategoryBar({ category, amount, max }: { category: Category; amo
   const width = useSharedValue(0);
 
   useEffect(() => {
+    width.value = 0;
     width.value = withDelay(200, withTiming(pct, { duration: 600 }));
   }, [pct, width]);
 

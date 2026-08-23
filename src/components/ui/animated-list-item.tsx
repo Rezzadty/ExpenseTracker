@@ -6,7 +6,7 @@ type Props = PropsWithChildren<{ index: number }>;
 export function AnimatedListItem({ index, children }: Props) {
   return (
     <Animated.View
-      entering={FadeInDown.delay(index * 60).duration(350).springify().damping(18)}
+      entering={FadeInDown.delay(index * 60).duration(350)}
       exiting={FadeOutLeft.duration(200)}
     >
       {children}
