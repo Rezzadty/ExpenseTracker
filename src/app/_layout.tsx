@@ -45,18 +45,24 @@ export default function RootLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
+          tabBarShowLabel: true,
+          tabBarPosition: "bottom",
+          tabBarLabelPosition: "below-icon",
           tabBarStyle: {
             backgroundColor: Colors.surface,
             borderTopWidth: 1,
             borderTopColor: Colors.border,
-            paddingBottom: 28,
-            paddingTop: Spacing.sm,
+            height: 70,
+            paddingTop: 8,
+            paddingBottom: 8,
+            elevation: 8,
           },
           tabBarActiveTintColor: Colors.accent,
           tabBarInactiveTintColor: Colors.textMuted,
           tabBarLabelStyle: {
             fontFamily: Fonts.sans,
-            fontSize: 12,
+            fontSize: 11,
+            marginTop: 2,
           },
           sceneStyle: { backgroundColor: Colors.background },
         }}
@@ -65,6 +71,7 @@ export default function RootLayout() {
           name="index"
           options={{
             title: "Dashboard",
+            tabBarLabel: "Dashboard",
             tabBarIcon: ({ color }) => (
               <Image
                 source={icons.dashboard}
@@ -79,6 +86,7 @@ export default function RootLayout() {
           name="expenses"
           options={{
             title: "Expenses",
+            tabBarLabel: "Expenses",
             tabBarIcon: ({ color }) => (
               <Image
                 source={icons.expenses}
@@ -93,6 +101,7 @@ export default function RootLayout() {
           name="statistics"
           options={{
             title: "Statistics",
+            tabBarLabel: "Statistics",
             tabBarIcon: ({ color }) => (
               <Image
                 source={icons.statistics}
@@ -107,6 +116,7 @@ export default function RootLayout() {
           name="settings"
           options={{
             title: "Settings",
+            tabBarLabel: "Settings",
             tabBarIcon: ({ color }) => (
               <Image
                 source={icons.settings}
