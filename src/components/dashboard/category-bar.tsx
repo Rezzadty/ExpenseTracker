@@ -1,10 +1,24 @@
+'use no memo';
+import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { ThemedText } from '@/components/ui/themed-text';
 import { CategoryColors, Colors, Spacing, type Category } from '@/constants/theme';
 import { formatMoney } from '@/utils/format';
 
 export function CategoryBar({ category, amount, max }: { category: Category; amount: number; max: number }) {
   const pct = max > 0 ? (amount / max) * 100 : 0;
+  const width = useSharedValue(0);
+
+  useEffect(() => {
+    width.value = withDelay(200, withTiming(pct, { duration: 600 }));
+  }, [pct, width]);
+
+  const barStyle = useAnimatedStyle(() => ({
+    width: `${width.value}%`,
+    backgroundColor: CategoryColors[category],
+  }));
+
   return (
     <View style={styles.categoryRow}>
       <View style={styles.categoryLabelRow}>
@@ -13,7 +27,7 @@ export function CategoryBar({ category, amount, max }: { category: Category; amo
         <ThemedText type="body" color="textSecondary">{formatMoney(amount)}</ThemedText>
       </View>
       <View style={styles.barTrack}>
-        <View style={[styles.barFill, { width: `${pct}%`, backgroundColor: CategoryColors[category] }]} />
+        <Animated.View style={[styles.barFill, barStyle]} />
       </View>
     </View>
   );

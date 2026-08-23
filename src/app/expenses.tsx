@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/navigation/navbar";
+import { AnimatedScreen } from "@/components/ui/animated-screen";
 import { ThemedText } from "@/components/ui/themed-text";
 import { ThemedView } from "@/components/ui/themed-view";
 import { Colors, Spacing } from "@/constants/theme";
@@ -10,11 +11,13 @@ export default function ExpensesScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safe} edges={["top"]}>
         <Navbar />
-        <ThemedView style={styles.center}>
-          <ThemedText type="body" color="textMuted">
-            Coming soon
-          </ThemedText>
-        </ThemedView>
+        <AnimatedScreen>
+          <ThemedView style={styles.center}>
+            <ThemedText type="body" color="textMuted">
+              Coming soon
+            </ThemedText>
+          </ThemedView>
+        </AnimatedScreen>
       </SafeAreaView>
     </ThemedView>
   );

@@ -4,6 +4,8 @@ import { SpendingCard } from "@/components/dashboard/spending-card";
 import { AddExpenseModal } from "@/components/modals/add-expense-modal";
 import { SetBudgetModal } from "@/components/modals/set-budget-modal";
 import { Navbar } from "@/components/navigation/navbar";
+import { AnimatedListItem } from "@/components/ui/animated-list-item";
+import { AnimatedScreen } from "@/components/ui/animated-screen";
 import { ThemedText } from "@/components/ui/themed-text";
 import { ThemedView } from "@/components/ui/themed-view";
 import {
@@ -79,6 +81,7 @@ export default function DashboardScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safe} edges={["top"]}>
         <Navbar />
+        <AnimatedScreen>
         <ScrollView
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
@@ -175,12 +178,13 @@ export default function DashboardScreen() {
             </View>
           ) : (
             <>
-              {visible.map((item) => (
-                <ExpenseRow
-                  key={item.id}
-                  item={item}
-                  onDelete={deleteExpense}
-                />
+              {visible.map((item, i) => (
+                <AnimatedListItem key={item.id} index={i}>
+                  <ExpenseRow
+                    item={item}
+                    onDelete={deleteExpense}
+                  />
+                </AnimatedListItem>
               ))}
               {filtered.length > 4 && (
                 <Pressable
@@ -202,6 +206,7 @@ export default function DashboardScreen() {
             </>
           )}
         </ScrollView>
+        </AnimatedScreen>
       </SafeAreaView>
 
       <AddExpenseModal

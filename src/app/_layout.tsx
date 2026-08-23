@@ -1,5 +1,5 @@
 // Root layout — loads DM Sans fonts, holds splash screen until ready, sets dark status bar.
-import { Colors, Fonts, Spacing } from "@/constants/theme";
+import { Colors, Fonts } from "@/constants/theme";
 import { ExpensesProvider } from "@/hooks/use-expenses";
 import {
   DMSans_400Regular,
@@ -56,6 +56,11 @@ export default function RootLayout() {
             paddingTop: 8,
             paddingBottom: 8,
             elevation: 8,
+          },
+          animation: "fade",
+          transitionSpec: {
+            animation: "timing",
+            config: { duration: 500 },
           },
           tabBarActiveTintColor: Colors.accent,
           tabBarInactiveTintColor: Colors.textMuted,

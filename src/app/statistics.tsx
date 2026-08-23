@@ -2,6 +2,7 @@ import { CategoryBar } from "@/components/dashboard/category-bar";
 import { Navbar } from "@/components/navigation/navbar";
 import { DonutChart } from "@/components/statistics/donut-chart";
 import { SpendingTrend } from "@/components/statistics/spending-trend";
+import { AnimatedScreen } from "@/components/ui/animated-screen";
 import { ThemedText } from "@/components/ui/themed-text";
 import { ThemedView } from "@/components/ui/themed-view";
 import { Colors, Radius, Spacing, type Category } from "@/constants/theme";
@@ -17,6 +18,7 @@ export default function StatisticsScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safe} edges={["top"]}>
         <Navbar />
+        <AnimatedScreen>
         <ScrollView
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
@@ -83,6 +85,7 @@ export default function StatisticsScreen() {
             <SpendingTrend expenses={expenses} />
           </ThemedView>
         </ScrollView>
+        </AnimatedScreen>
       </SafeAreaView>
     </ThemedView>
   );

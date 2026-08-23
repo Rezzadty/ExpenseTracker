@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { ThemedText } from '@/components/ui/themed-text';
+import { AnimatedModal } from '@/components/ui/animated-modal';
 import { CategoryColors, Colors, Fonts, Radius, Spacing, type Category } from '@/constants/theme';
 
 type Props = {
@@ -25,70 +26,62 @@ export function AddExpenseModal({ visible, onClose, onSave }: Props) {
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <ThemedText type="body" color="textPrimary" style={{ fontFamily: Fonts.sansBold, fontWeight: '700', fontSize: 18 }}>
-              Add Expense
-            </ThemedText>
-            <Pressable onPress={onClose} hitSlop={12}>
-              <ThemedText type="body" color="textMuted" style={{ fontSize: 22 }}>✕</ThemedText>
-            </Pressable>
-          </View>
-
-          <ThemedText type="caption" color="textSecondary" style={{ marginBottom: Spacing.xs }}>Amount (Rp)</ThemedText>
-          <TextInput
-            style={styles.input}
-            placeholderTextColor={Colors.textMuted}
-            placeholder="e.g. 50000"
-            keyboardType="numeric"
-            value={amount}
-            onChangeText={setAmount}
-          />
-
-          <ThemedText type="caption" color="textSecondary" style={{ marginBottom: Spacing.xs }}>Note</ThemedText>
-          <TextInput
-            style={styles.input}
-            placeholderTextColor={Colors.textMuted}
-            placeholder="What was it for?"
-            value={note}
-            onChangeText={setNote}
-          />
-
-          <ThemedText type="caption" color="textSecondary" style={{ marginBottom: Spacing.xs }}>Category</ThemedText>
-          <View style={styles.chipRow}>
-            {(Object.keys(CategoryColors) as Category[]).map((c) => (
-              <Pressable
-                key={c}
-                onPress={() => setCategory(c)}
-                style={[styles.chip, category === c ? styles.chipSelected : styles.chipUnselected]}
-              >
-                <ThemedText type="caption" color={category === c ? 'accent' : 'textSecondary'} style={{ fontFamily: Fonts.sansSemiBold, fontWeight: '600' }}>
-                  {c}
-                </ThemedText>
-              </Pressable>
-            ))}
-          </View>
-
-          <Pressable style={styles.saveBtn} onPress={handleSave}>
-            <ThemedText type="body" color="textOnAccent" style={{ fontFamily: Fonts.sansSemiBold, fontWeight: '600' }}>
-              Save Expense
-            </ThemedText>
+    <AnimatedModal visible={visible} onClose={onClose}>
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <ThemedText type="body" color="textPrimary" style={{ fontFamily: Fonts.sansBold, fontWeight: '700', fontSize: 18 }}>
+            Add Expense
+          </ThemedText>
+          <Pressable onPress={onClose} hitSlop={12}>
+            <ThemedText type="body" color="textMuted" style={{ fontSize: 22 }}>✕</ThemedText>
           </Pressable>
         </View>
+
+        <ThemedText type="caption" color="textSecondary" style={{ marginBottom: Spacing.xs }}>Amount (Rp)</ThemedText>
+        <TextInput
+          style={styles.input}
+          placeholderTextColor={Colors.textMuted}
+          placeholder="e.g. 50000"
+          keyboardType="numeric"
+          value={amount}
+          onChangeText={setAmount}
+        />
+
+        <ThemedText type="caption" color="textSecondary" style={{ marginBottom: Spacing.xs }}>Note</ThemedText>
+        <TextInput
+          style={styles.input}
+          placeholderTextColor={Colors.textMuted}
+          placeholder="What was it for?"
+          value={note}
+          onChangeText={setNote}
+        />
+
+        <ThemedText type="caption" color="textSecondary" style={{ marginBottom: Spacing.xs }}>Category</ThemedText>
+        <View style={styles.chipRow}>
+          {(Object.keys(CategoryColors) as Category[]).map((c) => (
+            <Pressable
+              key={c}
+              onPress={() => setCategory(c)}
+              style={[styles.chip, category === c ? styles.chipSelected : styles.chipUnselected]}
+            >
+              <ThemedText type="caption" color={category === c ? 'accent' : 'textSecondary'} style={{ fontFamily: Fonts.sansSemiBold, fontWeight: '600' }}>
+                {c}
+              </ThemedText>
+            </Pressable>
+          ))}
+        </View>
+
+        <Pressable style={styles.saveBtn} onPress={handleSave}>
+          <ThemedText type="body" color="textOnAccent" style={{ fontFamily: Fonts.sansSemiBold, fontWeight: '600' }}>
+            Save Expense
+          </ThemedText>
+        </Pressable>
       </View>
-    </Modal>
+    </AnimatedModal>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.lg,
-  },
   content: {
     backgroundColor: Colors.surface,
     borderRadius: Radius.card,
