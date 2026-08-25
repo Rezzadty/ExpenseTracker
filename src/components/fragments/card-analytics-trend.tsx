@@ -1,13 +1,14 @@
-// Fragment chart displaying daily spending trends across the last N days.
+// Fragment chart displaying daily or weekly trend based on selected timeframe.
 import { ThemedText } from "@/components/elements";
 import { Colors, Spacing } from "@/constants/theme";
+import type { Timeframe } from "@/hooks/use-analytics";
 import type { Expense } from "@/types/expense";
 import { StyleSheet, View } from "react-native";
 
-type DayData = { label: string; amount: number };
+type BarData = { label: string; amount: number };
 
-function getDailyTrend(expenses: Expense[], days: number = 7): DayData[] {
-  const result: DayData[] = [];
+function getDailyTrend(expenses: Expense[], days: number = 7): BarData[] {
+  const result: BarData[] = [];
   const today = new Date();
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(today);
@@ -22,21 +23,51 @@ function getDailyTrend(expenses: Expense[], days: number = 7): DayData[] {
   return result;
 }
 
+function getMonthlyTrend(expenses: Expense[]): BarData[] {
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+  const weeks: BarData[] = [
+    { label: "W1", amount: 0 },
+    { label: "W2", amount: 0 },
+    { label: "W3", amount: 0 },
+    { label: "W4", amount: 0 },
+  ];
+
+  const monthPrefix = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}`;
+
+  for (const exp of expenses) {
+    if (!exp.date.startsWith(monthPrefix)) continue;
+    const day = parseInt(exp.date.slice(8, 10), 10);
+    if (day <= 7) weeks[0].amount += exp.amount;
+    else if (day <= 14) weeks[1].amount += exp.amount;
+    else if (day <= 21) weeks[2].amount += exp.amount;
+    else if (day <= daysInMonth) weeks[3].amount += exp.amount;
+  }
+
+  return weeks;
+}
+
 export type CardAnalyticsTrendProps = {
   expenses: Expense[];
+  timeframe: Timeframe;
 };
 
 export default function CardAnalyticsTrend({
   expenses,
+  timeframe,
 }: CardAnalyticsTrendProps) {
-  const data = getDailyTrend(expenses);
+  const data =
+    timeframe === "monthly" ? getMonthlyTrend(expenses) : getDailyTrend(expenses);
   const max = Math.max(...data.map((d) => d.amount), 1);
 
   return (
     <View style={styles.container}>
       <View style={styles.bars}>
-        {data.map((day, i) => {
-          const heightPct = (day.amount / max) * 100;
+        {data.map((item, i) => {
+          const heightPct = (item.amount / max) * 100;
           return (
             <View key={i} style={styles.barCol}>
               <View style={styles.barTrack}>
@@ -52,7 +83,7 @@ export default function CardAnalyticsTrend({
                 color="textMuted"
                 style={{ fontSize: 10, marginTop: Spacing.xs }}
               >
-                {day.label}
+                {item.label}
               </ThemedText>
             </View>
           );
@@ -66,7 +97,7 @@ const styles = StyleSheet.create({
   container: { width: "100%" },
   bars: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
     alignItems: "flex-end",
     height: 120,
   },

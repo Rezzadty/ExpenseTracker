@@ -58,10 +58,6 @@ export default function RootLayout() {
             elevation: 8,
           },
           animation: "fade",
-          transitionSpec: {
-            animation: "timing",
-            config: { duration: 300 },
-          },
           tabBarActiveTintColor: Colors.accent,
           tabBarInactiveTintColor: Colors.textMuted,
           tabBarLabelStyle: {

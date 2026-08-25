@@ -2,6 +2,7 @@
 import {
   AnimatedListItem,
   AnimatedScreen,
+  Button,
   Chip,
   ThemedText,
   ThemedView,
@@ -71,7 +72,7 @@ export default function DashboardScreen() {
             />
 
             <View style={styles.actionRow}>
-              <Pressable
+              <Button
                 style={styles.actionBtn}
                 onPress={() => setShowAddExpense(true)}
               >
@@ -89,8 +90,8 @@ export default function DashboardScreen() {
                 >
                   Add Expense
                 </ThemedText>
-              </Pressable>
-              <Pressable
+              </Button>
+              <Button
                 style={[styles.actionBtn, styles.actionBtnOutline]}
                 onPress={() => setShowBudget(true)}
               >
@@ -108,7 +109,7 @@ export default function DashboardScreen() {
                 >
                   Set Budget
                 </ThemedText>
-              </Pressable>
+              </Button>
             </View>
 
             <ThemedView surface="surface" style={styles.card}>

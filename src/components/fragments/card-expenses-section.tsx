@@ -1,4 +1,4 @@
-// Fragment composite component containing full expense list with filter chips, search input, summary, and custom delete modal.
+// Fragment composite component containing full expense list with top summary, search input, filter chips, and custom delete modal.
 import {
   AnimatedListItem,
   Chip,
@@ -71,6 +71,23 @@ export default function CardExpensesSection({
 
   return (
     <>
+      <ThemedView surface="surface" style={styles.summaryCard}>
+        <ThemedText type="caption" color="textSecondary">
+          {filtered.length} transaction{filtered.length !== 1 ? "s" : ""}
+        </ThemedText>
+        <ThemedText
+          type="body"
+          color="textPrimary"
+          style={{
+            fontFamily: Fonts.sansBold,
+            fontWeight: "700",
+            fontSize: 20,
+          }}
+        >
+          {formatMoney(total)}
+        </ThemedText>
+      </ThemedView>
+
       <Input
         placeholder="Search expenses..."
         value={search}
@@ -88,23 +105,6 @@ export default function CardExpensesSection({
           />
         ))}
       </View>
-
-      <ThemedView surface="surface" style={styles.summaryCard}>
-        <ThemedText type="caption" color="textSecondary">
-          {filtered.length} transaction{filtered.length !== 1 ? "s" : ""}
-        </ThemedText>
-        <ThemedText
-          type="body"
-          color="textPrimary"
-          style={{
-            fontFamily: Fonts.sansBold,
-            fontWeight: "700",
-            fontSize: 20,
-          }}
-        >
-          {formatMoney(total)}
-        </ThemedText>
-      </ThemedView>
 
       {filtered.length === 0 ? (
         <View style={styles.empty}>
@@ -130,18 +130,18 @@ export default function CardExpensesSection({
 }
 
 const styles = StyleSheet.create({
-  chipRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: Spacing.sm,
-    marginBottom: Spacing.xl,
-  },
   summaryCard: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     borderRadius: Radius.card,
     padding: Spacing.lg,
+    marginBottom: Spacing.base,
+  },
+  chipRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: Spacing.sm,
     marginBottom: Spacing.xl,
   },
   empty: {

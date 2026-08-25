@@ -1,5 +1,10 @@
-// Analytics screen displaying total spend, donut breakdown, category bars, and 7-day trend.
-import { AnimatedScreen, ThemedText, ThemedView } from "@/components/elements";
+// Analytics screen displaying period filters, total spend, donut breakdown, category bars, and trend chart.
+import {
+  AnimatedScreen,
+  Chip,
+  ThemedText,
+  ThemedView,
+} from "@/components/elements";
 import {
   CardAnalyticsDonut,
   CardAnalyticsTrend,
@@ -7,14 +12,33 @@ import {
   Navbar,
 } from "@/components/fragments";
 import { Colors, Radius, Spacing, type Category } from "@/constants/theme";
-import { useAnalytics } from "@/hooks/use-analytics";
+import { useAnalytics, type Timeframe } from "@/hooks/use-analytics";
 import { formatMoney } from "@/utils/format";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+const TIMEFRAMES: { label: string; value: Timeframe }[] = [
+  { label: "Daily", value: "daily" },
+  { label: "Weekly", value: "weekly" },
+  { label: "Monthly", value: "monthly" },
+];
+
+const PERIOD_LABELS: Record<Timeframe, string> = {
+  daily: "Today Spending",
+  weekly: "This Week Spending",
+  monthly: "This Month Spending",
+};
+
 export default function AnalyticsScreen() {
-  const { expenses, totalSpent, byCategory, slices, maxCategory } =
-    useAnalytics();
+  const {
+    timeframe,
+    setTimeframe,
+    filteredExpenses,
+    totalSpent,
+    byCategory,
+    slices,
+    maxCategory,
+  } = useAnalytics();
 
   return (
     <ThemedView style={styles.container}>
@@ -25,9 +49,20 @@ export default function AnalyticsScreen() {
             contentContainerStyle={styles.content}
             showsVerticalScrollIndicator={false}
           >
+            <View style={styles.timeframeRow}>
+              {TIMEFRAMES.map((t) => (
+                <Chip
+                  key={t.value}
+                  label={t.label}
+                  selected={timeframe === t.value}
+                  onPress={() => setTimeframe(t.value)}
+                />
+              ))}
+            </View>
+
             <View style={styles.totalCard}>
               <ThemedText type="sectionTitle" color="textSecondary">
-                Total Spending
+                {PERIOD_LABELS[timeframe]}
               </ThemedText>
               <ThemedText
                 type="money"
@@ -41,7 +76,7 @@ export default function AnalyticsScreen() {
                 color="textMuted"
                 style={{ marginTop: Spacing.xs }}
               >
-                {expenses.length} transactions
+                {filteredExpenses.length} transactions
               </ThemedText>
             </View>
 
@@ -53,7 +88,15 @@ export default function AnalyticsScreen() {
               >
                 Spending Breakdown
               </ThemedText>
-              <CardAnalyticsDonut data={slices} total={totalSpent} />
+              {slices.length === 0 ? (
+                <View style={styles.empty}>
+                  <ThemedText type="body" color="textMuted">
+                    No data for this period
+                  </ThemedText>
+                </View>
+              ) : (
+                <CardAnalyticsDonut data={slices} total={totalSpent} />
+              )}
             </ThemedView>
 
             <ThemedView surface="surface" style={styles.card}>
@@ -64,15 +107,23 @@ export default function AnalyticsScreen() {
               >
                 Category Details
               </ThemedText>
-              {(Object.entries(byCategory) as [Category, number][]).map(
-                ([cat, amt]) => (
-                  <CardCategoryProgress
-                    key={cat}
-                    category={cat}
-                    amount={amt}
-                    max={maxCategory}
-                  />
-                ),
+              {Object.keys(byCategory).length === 0 ? (
+                <View style={styles.empty}>
+                  <ThemedText type="body" color="textMuted">
+                    No transactions
+                  </ThemedText>
+                </View>
+              ) : (
+                (Object.entries(byCategory) as [Category, number][]).map(
+                  ([cat, amt]) => (
+                    <CardCategoryProgress
+                      key={cat}
+                      category={cat}
+                      amount={amt}
+                      max={maxCategory}
+                    />
+                  ),
+                )
               )}
             </ThemedView>
 
@@ -82,9 +133,12 @@ export default function AnalyticsScreen() {
                 color="textSecondary"
                 style={{ marginBottom: Spacing.base }}
               >
-                Daily Trend
+                {timeframe === "monthly" ? "Monthly Breakdown" : "Daily Trend"}
               </ThemedText>
-              <CardAnalyticsTrend expenses={expenses} />
+              <CardAnalyticsTrend
+                expenses={filteredExpenses}
+                timeframe={timeframe}
+              />
             </ThemedView>
           </ScrollView>
         </AnimatedScreen>
@@ -97,6 +151,11 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   safe: { flex: 1 },
   content: { padding: Spacing.base, paddingBottom: 100 },
+  timeframeRow: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+    marginBottom: Spacing.base,
+  },
   totalCard: {
     backgroundColor: Colors.surface,
     borderRadius: Radius.card,
@@ -108,5 +167,9 @@ const styles = StyleSheet.create({
     borderRadius: Radius.card,
     padding: Spacing.lg,
     marginBottom: Spacing.xl,
+  },
+  empty: {
+    paddingVertical: Spacing.lg,
+    alignItems: "center",
   },
 });

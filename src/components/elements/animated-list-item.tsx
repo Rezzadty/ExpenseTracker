@@ -1,6 +1,11 @@
-// Pure presentational animated list item with enter/exit transitions.
+// Pure presentational animated list item with smooth ease-out transitions without bounce.
 import type { PropsWithChildren } from "react";
-import Animated, { FadeInDown, FadeOutLeft } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  FadeInDown,
+  FadeOut,
+  LinearTransition,
+} from "react-native-reanimated";
 
 export type AnimatedListItemProps = PropsWithChildren<{ index: number }>;
 
@@ -10,8 +15,11 @@ export default function AnimatedListItem({
 }: AnimatedListItemProps) {
   return (
     <Animated.View
-      entering={FadeInDown.delay(index * 60).duration(350)}
-      exiting={FadeOutLeft.duration(200)}
+      layout={LinearTransition.duration(200).easing(Easing.out(Easing.quad))}
+      entering={FadeInDown.delay(Math.min(index * 25, 120))
+        .duration(220)
+        .easing(Easing.out(Easing.cubic))}
+      exiting={FadeOut.duration(140).easing(Easing.in(Easing.quad))}
     >
       {children}
     </Animated.View>

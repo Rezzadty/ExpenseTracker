@@ -1,7 +1,15 @@
-// Pure presentational animated screen wrapper.
+// Pure presentational animated screen wrapper with smooth subtle entry fade.
 import type { PropsWithChildren } from "react";
-import { View } from "react-native";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 export default function AnimatedScreen({ children }: PropsWithChildren) {
-  return <View style={{ flex: 1 }}>{children}</View>;
+  return (
+    <Animated.View
+      entering={FadeIn.duration(280)}
+      exiting={FadeOut.duration(180)}
+      style={{ flex: 1 }}
+    >
+      {children}
+    </Animated.View>
+  );
 }

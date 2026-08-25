@@ -5,8 +5,8 @@ import { StyleSheet, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withDelay,
   withTiming,
+  Easing,
 } from "react-native-reanimated";
 import { Colors } from "@/constants/theme";
 
@@ -19,8 +19,10 @@ export default function ProgressBar({ percentage, color }: ProgressBarProps) {
   const width = useSharedValue(0);
 
   useEffect(() => {
-    width.value = 0;
-    width.value = withDelay(200, withTiming(percentage, { duration: 600 }));
+    width.value = withTiming(percentage, {
+      duration: 450,
+      easing: Easing.out(Easing.cubic),
+    });
   }, [percentage, width]);
 
   const barStyle = useAnimatedStyle(() => ({
