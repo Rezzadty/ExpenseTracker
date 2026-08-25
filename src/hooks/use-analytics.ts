@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { Category } from '@/constants/theme';
 import { useExpenses } from '@/hooks/use-expenses';
 
-export function useStatistics() {
+export function useAnalytics() {
   const { expenses, totalSpent, byCategory } = useExpenses();
 
   const slices = useMemo(() => {

@@ -19,7 +19,7 @@ SplashScreen.preventAutoHideAsync();
 const icons = {
   dashboard: require("@/assets/icons/dasboard_icon.png"),
   expenses: require("@/assets/icons/expense_icon.png"),
-  statistics: require("@/assets/icons/statistics_icon.png"),
+  analytics: require("@/assets/icons/analytics_icon.png"),
   settings: require("@/assets/icons/settings_icon.png"),
 };
 
@@ -103,13 +103,13 @@ export default function RootLayout() {
           }}
         />
         <Tabs.Screen
-          name="statistics"
+          name="analytics"
           options={{
-            title: "Statistics",
-            tabBarLabel: "Statistics",
+            title: "Analytics",
+            tabBarLabel: "Analytics",
             tabBarIcon: ({ color }) => (
               <Image
-                source={icons.statistics}
+                source={icons.analytics}
                 style={{ width: 20, height: 20 }}
                 tintColor={color}
                 resizeMode="contain"

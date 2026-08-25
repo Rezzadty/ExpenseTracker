@@ -30,7 +30,7 @@ export function BottomTabBar() {
           ◔
         </ThemedText>
         <ThemedText type="caption" color="textMuted">
-          Statistics
+          Analytics
         </ThemedText>
       </Pressable>
       <Pressable style={styles.tabItem}>

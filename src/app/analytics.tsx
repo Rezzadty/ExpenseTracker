@@ -1,18 +1,18 @@
 import { CategoryBar } from "@/components/dashboard/category-bar";
 import { Navbar } from "@/components/navigation/navbar";
-import { DonutChart } from "@/components/statistics/donut-chart";
-import { SpendingTrend } from "@/components/statistics/spending-trend";
+import { DonutChart } from "@/components/analytics/donut-chart";
+import { SpendingTrend } from "@/components/analytics/spending-trend";
 import { AnimatedScreen } from "@/components/ui/animated-screen";
 import { ThemedText } from "@/components/ui/themed-text";
 import { ThemedView } from "@/components/ui/themed-view";
 import { Colors, Radius, Spacing, type Category } from "@/constants/theme";
-import { useStatistics } from "@/hooks/use-statistics";
+import { useAnalytics } from "@/hooks/use-analytics";
 import { formatMoney } from "@/utils/format";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function StatisticsScreen() {
-  const { expenses, totalSpent, byCategory, slices, maxCategory } = useStatistics();
+export default function AnalyticsScreen() {
+  const { expenses, totalSpent, byCategory, slices, maxCategory } = useAnalytics();
 
   return (
     <ThemedView style={styles.container}>

@@ -84,4 +84,4 @@ src/
 
 ## Current Status
 
-**In development** — Dashboard and Statistics screens are functional with shared in-memory data. Persistence and remote APIs are coming next.
+**In development** — Dashboard and Analytics screens are functional with shared in-memory data. Persistence and remote APIs are coming next.

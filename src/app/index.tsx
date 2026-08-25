@@ -135,7 +135,7 @@ export default function DashboardScreen() {
               color="textSecondary"
               style={{ marginBottom: Spacing.base }}
             >
-              Outcome Statistics
+              Outcome Analytics
             </ThemedText>
             {(Object.entries(byCategory) as [Category, number][]).map(
               ([cat, amt]) => (
