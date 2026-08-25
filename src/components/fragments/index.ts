@@ -23,6 +23,9 @@ export type { ModalAddExpenseProps } from "./modal-add-expense";
 export { default as ModalSetBudget } from "./modal-set-budget";
 export type { ModalSetBudgetProps } from "./modal-set-budget";
 
+export { default as ModalConfirmDelete } from "./modal-confirm-delete";
+export type { ModalConfirmDeleteProps } from "./modal-confirm-delete";
+
 export { default as Navbar } from "./navbar";
 export type { NavbarProps } from "./navbar";
 

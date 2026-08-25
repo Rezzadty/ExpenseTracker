@@ -3,7 +3,15 @@ import type { Category } from '@/constants/theme';
 import { useExpenses } from '@/hooks/use-expenses';
 
 export function useDashboard() {
-  const { expenses, addExpense, deleteExpense, todaySpent, byCategory } = useExpenses();
+  const {
+    expenses,
+    dailyBudget,
+    setDailyBudget,
+    addExpense,
+    deleteExpense,
+    todaySpent,
+    byCategory,
+  } = useExpenses();
   const [filter, setFilter] = useState<'All' | Category>('All');
   const [expanded, setExpanded] = useState(false);
   const [showAddExpense, setShowAddExpense] = useState(false);
@@ -15,9 +23,13 @@ export function useDashboard() {
     [expenses, filter],
   );
   const visible = useMemo(() => (expanded ? filtered : filtered.slice(0, 4)), [filtered, expanded]);
+  const budgetRemaining = dailyBudget - todaySpent;
 
   return {
     expenses,
+    dailyBudget,
+    setDailyBudget,
+    budgetRemaining,
     addExpense,
     deleteExpense,
     todaySpent,

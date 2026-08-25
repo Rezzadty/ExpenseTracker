@@ -40,6 +40,8 @@ export default function DashboardScreen() {
   const {
     addExpense,
     todaySpent,
+    dailyBudget,
+    setDailyBudget,
     byCategory,
     filter,
     setFilter,
@@ -63,7 +65,10 @@ export default function DashboardScreen() {
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
           >
-            <CardBalance todaySpent={todaySpent} />
+            <CardBalance
+              todaySpent={todaySpent}
+              dailyBudget={dailyBudget}
+            />
 
             <View style={styles.actionRow}>
               <Pressable
@@ -190,7 +195,9 @@ export default function DashboardScreen() {
       />
       <ModalSetBudget
         visible={showBudget}
+        initialBudget={dailyBudget}
         onClose={() => setShowBudget(false)}
+        onSave={setDailyBudget}
       />
     </ThemedView>
   );

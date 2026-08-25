@@ -1,4 +1,4 @@
-// Fragment composite component containing full expense list with filter chips, search input, and summary.
+// Fragment composite component containing full expense list with filter chips, search input, summary, and custom delete modal.
 import {
   AnimatedListItem,
   Chip,
@@ -7,6 +7,7 @@ import {
   ThemedView,
 } from "@/components/elements";
 import CardExpenseItem from "@/components/fragments/card-expense-item";
+import ModalConfirmDelete from "@/components/fragments/modal-confirm-delete";
 import {
   Fonts,
   Radius,
@@ -15,8 +16,8 @@ import {
 } from "@/constants/theme";
 import type { Expense } from "@/types/expense";
 import { formatMoney } from "@/utils/format";
-import { useCallback, useMemo, useState } from "react";
-import { Alert, StyleSheet, View } from "react-native";
+import { useMemo, useState } from "react";
+import { StyleSheet, View } from "react-native";
 
 const CATEGORIES: ("All" | Category)[] = [
   "All",
@@ -40,20 +41,14 @@ export default function CardExpensesSection({
 }: CardExpensesSectionProps) {
   const [filter, setFilter] = useState<"All" | Category>("All");
   const [search, setSearch] = useState("");
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
-  const confirmDelete = useCallback(
-    (id: string) => {
-      Alert.alert(
-        "Delete Expense",
-        "Are you sure you want to delete this expense?",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Delete", style: "destructive", onPress: () => onDelete(id) },
-        ],
-      );
-    },
-    [onDelete],
-  );
+  const handleDeleteConfirm = () => {
+    if (pendingDeleteId) {
+      onDelete(pendingDeleteId);
+      setPendingDeleteId(null);
+    }
+  };
 
   const filtered = useMemo(() => {
     let result = expenses;
@@ -120,10 +115,16 @@ export default function CardExpensesSection({
       ) : (
         filtered.map((item, i) => (
           <AnimatedListItem key={item.id} index={i}>
-            <CardExpenseItem item={item} onDelete={confirmDelete} />
+            <CardExpenseItem item={item} onDelete={(id) => setPendingDeleteId(id)} />
           </AnimatedListItem>
         ))
       )}
+
+      <ModalConfirmDelete
+        visible={pendingDeleteId !== null}
+        onCancel={() => setPendingDeleteId(null)}
+        onConfirm={handleDeleteConfirm}
+      />
     </>
   );
 }

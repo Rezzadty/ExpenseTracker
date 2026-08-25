@@ -19,6 +19,7 @@ let nextId = 11;
 
 function useExpensesStore() {
   const [expenses, setExpenses] = useState<Expense[]>(SEED);
+  const [dailyBudget, setDailyBudget] = useState<number>(200000);
 
   const addExpense = useCallback((data: Omit<Expense, 'id'>) => {
     setExpenses((prev) => [{ ...data, id: String(nextId++) }, ...prev]);
@@ -44,7 +45,16 @@ function useExpensesStore() {
     return map;
   }, [expenses]);
 
-  return { expenses, addExpense, deleteExpense, totalSpent, todaySpent, byCategory } as const;
+  return {
+    expenses,
+    dailyBudget,
+    setDailyBudget,
+    addExpense,
+    deleteExpense,
+    totalSpent,
+    todaySpent,
+    byCategory,
+  } as const;
 }
 
 type ExpensesContextType = ReturnType<typeof useExpensesStore>;

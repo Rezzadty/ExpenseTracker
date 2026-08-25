@@ -1,26 +1,39 @@
 // Fragment modal dialog for setting daily spending budget.
-import {
-  AnimatedModal,
-  Input,
-  ThemedText,
-} from "@/components/elements";
+import { AnimatedModal, Input, ThemedText } from "@/components/elements";
 import { Colors, Fonts, Radius, Spacing } from "@/constants/theme";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 export type ModalSetBudgetProps = {
   visible: boolean;
+  initialBudget?: number;
   onClose: () => void;
+  onSave: (budget: number) => void;
 };
 
 export default function ModalSetBudget({
   visible,
+  initialBudget = 200000,
   onClose,
+  onSave,
 }: ModalSetBudgetProps) {
   const [budget, setBudget] = useState("");
 
+  const handleSave = () => {
+    const amt = parseInt(budget || String(initialBudget), 10);
+    if (isNaN(amt) || amt < 0) return;
+    onSave(amt);
+    setBudget("");
+    onClose();
+  };
+
+  const handleClose = () => {
+    setBudget("");
+    onClose();
+  };
+
   return (
-    <AnimatedModal visible={visible} onClose={onClose}>
+    <AnimatedModal visible={visible} onClose={handleClose}>
       <View style={styles.content}>
         <View style={styles.header}>
           <ThemedText
@@ -34,7 +47,7 @@ export default function ModalSetBudget({
           >
             Set Budget
           </ThemedText>
-          <Pressable onPress={onClose} hitSlop={12}>
+          <Pressable onPress={handleClose} hitSlop={12}>
             <ThemedText type="body" color="textMuted" style={{ fontSize: 22 }}>
               ✕
             </ThemedText>
@@ -49,14 +62,14 @@ export default function ModalSetBudget({
           Daily Budget (Rp)
         </ThemedText>
         <Input
-          placeholder="e.g. 200000"
+          placeholder={`Current: ${initialBudget}`}
           keyboardType="numeric"
           value={budget}
           onChangeText={setBudget}
           style={{ marginBottom: Spacing.base }}
         />
 
-        <Pressable style={styles.saveBtn} onPress={onClose}>
+        <Pressable style={styles.saveBtn} onPress={handleSave}>
           <ThemedText
             type="body"
             color="textOnAccent"

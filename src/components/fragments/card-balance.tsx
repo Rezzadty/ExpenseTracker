@@ -1,14 +1,24 @@
-// Fragment composite card showing today total spending and date.
-import { Card, ThemedText } from "@/components/elements";
-import { Radius, Spacing } from "@/constants/theme";
+// Fragment composite card showing today total spending, daily budget, and remaining balance.
+import { Card, ProgressBar, ThemedText } from "@/components/elements";
+import { Colors, Fonts, Radius, Spacing } from "@/constants/theme";
 import { formatDate, formatMoney } from "@/utils/format";
 import { StyleSheet, View } from "react-native";
 
 export type CardBalanceProps = {
   todaySpent: number;
+  dailyBudget: number;
 };
 
-export default function CardBalance({ todaySpent }: CardBalanceProps) {
+export default function CardBalance({
+  todaySpent,
+  dailyBudget,
+}: CardBalanceProps) {
+  const percentage =
+    dailyBudget > 0 ? Math.min((todaySpent / dailyBudget) * 100, 100) : 0;
+  const remaining = dailyBudget - todaySpent;
+  const isOverBudget = remaining < 0;
+  const barColor = isOverBudget ? Colors.danger : Colors.accent;
+
   return (
     <Card style={styles.spendingCard}>
       <ThemedText type="sectionTitle" color="accent">
@@ -26,6 +36,37 @@ export default function CardBalance({ todaySpent }: CardBalanceProps) {
           {formatMoney(todaySpent)}
         </ThemedText>
       </View>
+
+      <View style={styles.budgetRow}>
+        <View>
+          <ThemedText type="caption" color="textMuted">
+            Daily Budget
+          </ThemedText>
+          <ThemedText
+            type="body"
+            color="textSecondary"
+            style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}
+          >
+            {formatMoney(dailyBudget)}
+          </ThemedText>
+        </View>
+        <View style={{ alignItems: "flex-end" }}>
+          <ThemedText type="caption" color="textMuted">
+            {isOverBudget ? "Over Budget" : "Remaining"}
+          </ThemedText>
+          <ThemedText
+            type="body"
+            color={isOverBudget ? "danger" : "accent"}
+            style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}
+          >
+            {formatMoney(Math.abs(remaining))}
+          </ThemedText>
+        </View>
+      </View>
+
+      <View style={styles.progressWrapper}>
+        <ProgressBar percentage={percentage} color={barColor} />
+      </View>
     </Card>
   );
 }
@@ -42,5 +83,16 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     justifyContent: "space-between",
     marginTop: Spacing.sm,
+  },
+  budgetRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: Spacing.base,
+    paddingTop: Spacing.base,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
+  progressWrapper: {
+    marginTop: Spacing.md,
   },
 });
