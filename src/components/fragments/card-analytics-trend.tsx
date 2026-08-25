@@ -1,4 +1,5 @@
-import { ThemedText } from "@/components/ui/themed-text";
+// Fragment chart displaying daily spending trends across the last N days.
+import { ThemedText } from "@/components/elements";
 import { Colors, Spacing } from "@/constants/theme";
 import type { Expense } from "@/types/expense";
 import { StyleSheet, View } from "react-native";
@@ -21,7 +22,13 @@ function getDailyTrend(expenses: Expense[], days: number = 7): DayData[] {
   return result;
 }
 
-export function SpendingTrend({ expenses }: { expenses: Expense[] }) {
+export type CardAnalyticsTrendProps = {
+  expenses: Expense[];
+};
+
+export default function CardAnalyticsTrend({
+  expenses,
+}: CardAnalyticsTrendProps) {
   const data = getDailyTrend(expenses);
   const max = Math.max(...data.map((d) => d.amount), 1);
 

@@ -1,9 +1,10 @@
-import { ExpenseSection } from "@/components/expenses/expense-section";
-import { AddExpenseModal } from "@/components/modals/add-expense-modal";
-import { Navbar } from "@/components/navigation/navbar";
-import { AnimatedScreen } from "@/components/ui/animated-screen";
-import { ThemedText } from "@/components/ui/themed-text";
-import { ThemedView } from "@/components/ui/themed-view";
+// Expenses screen displaying full expense list with filter, search, delete, and add modal trigger.
+import { AnimatedScreen, ThemedText, ThemedView } from "@/components/elements";
+import {
+  CardExpensesSection,
+  ModalAddExpense,
+  Navbar,
+} from "@/components/fragments";
 import { Colors, Fonts, Spacing } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
 import { useState } from "react";
@@ -31,7 +32,10 @@ export default function ExpensesScreen() {
               All Expenses
             </ThemedText>
 
-            <ExpenseSection expenses={expenses} onDelete={deleteExpense} />
+            <CardExpensesSection
+              expenses={expenses}
+              onDelete={deleteExpense}
+            />
           </ScrollView>
         </AnimatedScreen>
 
@@ -39,14 +43,18 @@ export default function ExpensesScreen() {
           <ThemedText
             type="body"
             color="textOnAccent"
-            style={{ fontFamily: Fonts.sansBold, fontWeight: "700", fontSize: 24 }}
+            style={{
+              fontFamily: Fonts.sansBold,
+              fontWeight: "700",
+              fontSize: 24,
+            }}
           >
             +
           </ThemedText>
         </Pressable>
       </SafeAreaView>
 
-      <AddExpenseModal
+      <ModalAddExpense
         visible={showAdd}
         onClose={() => setShowAdd(false)}
         onSave={addExpense}

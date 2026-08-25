@@ -1,12 +1,16 @@
-import { ThemedText } from "@/components/ui/themed-text";
-import { Colors, Radius, Spacing } from "@/constants/theme";
+// Fragment composite card showing today total spending and date.
+import { Card, ThemedText } from "@/components/elements";
+import { Radius, Spacing } from "@/constants/theme";
 import { formatDate, formatMoney } from "@/utils/format";
 import { StyleSheet, View } from "react-native";
-import Animated from "react-native-reanimated";
 
-export function SpendingCard({ todaySpent }: { todaySpent: number }) {
+export type CardBalanceProps = {
+  todaySpent: number;
+};
+
+export default function CardBalance({ todaySpent }: CardBalanceProps) {
   return (
-    <Animated.View style={styles.spendingCard}>
+    <Card style={styles.spendingCard}>
       <ThemedText type="sectionTitle" color="accent">
         {formatDate()}
       </ThemedText>
@@ -22,13 +26,12 @@ export function SpendingCard({ todaySpent }: { todaySpent: number }) {
           {formatMoney(todaySpent)}
         </ThemedText>
       </View>
-    </Animated.View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   spendingCard: {
-    backgroundColor: Colors.surface,
     borderRadius: Radius.card,
     padding: Spacing.lg,
     marginBottom: Spacing.xl,

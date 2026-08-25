@@ -1,8 +1,9 @@
-import { ThemedText } from "@/components/ui/themed-text";
+// Fragment bottom tab bar navigation component.
+import { ThemedText } from "@/components/elements";
 import { Colors, Fonts, Spacing } from "@/constants/theme";
 import { Pressable, StyleSheet, View } from "react-native";
 
-export function BottomTabBar() {
+export default function BottomTabBar() {
   return (
     <View style={styles.bottomTab}>
       <Pressable style={styles.tabItem}>

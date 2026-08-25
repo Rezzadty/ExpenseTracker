@@ -1,7 +1,6 @@
-import { Navbar } from "@/components/navigation/navbar";
-import { AnimatedScreen } from "@/components/ui/animated-screen";
-import { ThemedText } from "@/components/ui/themed-text";
-import { ThemedView } from "@/components/ui/themed-view";
+// Settings screen placeholder view.
+import { AnimatedScreen, ThemedText, ThemedView } from "@/components/elements";
+import { Navbar } from "@/components/fragments";
 import { Colors, Spacing } from "@/constants/theme";
 import { StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

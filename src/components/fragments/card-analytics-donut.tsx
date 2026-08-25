@@ -1,4 +1,5 @@
-import { ThemedText } from "@/components/ui/themed-text";
+// Fragment analytics donut chart and legend breakdown for category spending.
+import { ThemedText } from "@/components/elements";
 import {
   CategoryColors,
   Colors,
@@ -10,14 +11,26 @@ import { formatMoney } from "@/utils/format";
 import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 
-type Slice = { category: Category; amount: number; pct: number };
+export type DonutSlice = {
+  category: Category;
+  amount: number;
+  pct: number;
+};
 
-export function DonutChart({ data, total }: { data: Slice[]; total: number }) {
+export type CardAnalyticsDonutProps = {
+  data: DonutSlice[];
+  total: number;
+};
+
+export default function CardAnalyticsDonut({
+  data,
+  total,
+}: CardAnalyticsDonutProps) {
   const size = 200;
   const stroke = 20;
 
   const segments = useMemo(() => {
-    return data.reduce<(Slice & { startAngle: number })[]>((acc, slice) => {
+    return data.reduce<(DonutSlice & { startAngle: number })[]>((acc, slice) => {
       const prevEnd =
         acc.length > 0
           ? acc[acc.length - 1].startAngle + acc[acc.length - 1].pct * 3.6

@@ -1,9 +1,13 @@
-import { ExpenseRow } from "@/components/dashboard/expense-row";
-import { AnimatedListItem } from "@/components/ui/animated-list-item";
-import { ThemedText } from "@/components/ui/themed-text";
-import { ThemedView } from "@/components/ui/themed-view";
+// Fragment composite component containing full expense list with filter chips, search input, and summary.
 import {
-  Colors,
+  AnimatedListItem,
+  Chip,
+  Input,
+  ThemedText,
+  ThemedView,
+} from "@/components/elements";
+import CardExpenseItem from "@/components/fragments/card-expense-item";
+import {
   Fonts,
   Radius,
   Spacing,
@@ -11,8 +15,8 @@ import {
 } from "@/constants/theme";
 import type { Expense } from "@/types/expense";
 import { formatMoney } from "@/utils/format";
-import { useMemo, useState } from "react";
-import { Pressable, StyleSheet, TextInput, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { Alert, StyleSheet, View } from "react-native";
 
 const CATEGORIES: ("All" | Category)[] = [
   "All",
@@ -25,14 +29,31 @@ const CATEGORIES: ("All" | Category)[] = [
   "Other",
 ];
 
-type Props = {
+export type CardExpensesSectionProps = {
   expenses: Expense[];
   onDelete: (id: string) => void;
 };
 
-export function ExpenseSection({ expenses, onDelete }: Props) {
+export default function CardExpensesSection({
+  expenses,
+  onDelete,
+}: CardExpensesSectionProps) {
   const [filter, setFilter] = useState<"All" | Category>("All");
   const [search, setSearch] = useState("");
+
+  const confirmDelete = useCallback(
+    (id: string) => {
+      Alert.alert(
+        "Delete Expense",
+        "Are you sure you want to delete this expense?",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Delete", style: "destructive", onPress: () => onDelete(id) },
+        ],
+      );
+    },
+    [onDelete],
+  );
 
   const filtered = useMemo(() => {
     let result = expenses;
@@ -55,32 +76,21 @@ export function ExpenseSection({ expenses, onDelete }: Props) {
 
   return (
     <>
-      <TextInput
-        style={styles.searchInput}
-        placeholderTextColor={Colors.textMuted}
+      <Input
         placeholder="Search expenses..."
         value={search}
         onChangeText={setSearch}
+        style={{ marginBottom: Spacing.base }}
       />
 
       <View style={styles.chipRow}>
         {CATEGORIES.map((c) => (
-          <Pressable
+          <Chip
             key={c}
+            label={c}
+            selected={filter === c}
             onPress={() => setFilter(c)}
-            style={[
-              styles.chip,
-              filter === c ? styles.chipSelected : styles.chipUnselected,
-            ]}
-          >
-            <ThemedText
-              type="caption"
-              color={filter === c ? "accent" : "textSecondary"}
-              style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}
-            >
-              {c}
-            </ThemedText>
-          </Pressable>
+          />
         ))}
       </View>
 
@@ -91,7 +101,11 @@ export function ExpenseSection({ expenses, onDelete }: Props) {
         <ThemedText
           type="body"
           color="textPrimary"
-          style={{ fontFamily: Fonts.sansBold, fontWeight: "700", fontSize: 20 }}
+          style={{
+            fontFamily: Fonts.sansBold,
+            fontWeight: "700",
+            fontSize: 20,
+          }}
         >
           {formatMoney(total)}
         </ThemedText>
@@ -106,7 +120,7 @@ export function ExpenseSection({ expenses, onDelete }: Props) {
       ) : (
         filtered.map((item, i) => (
           <AnimatedListItem key={item.id} index={i}>
-            <ExpenseRow item={item} onDelete={onDelete} />
+            <CardExpenseItem item={item} onDelete={confirmDelete} />
           </AnimatedListItem>
         ))
       )}
@@ -115,34 +129,11 @@ export function ExpenseSection({ expenses, onDelete }: Props) {
 }
 
 const styles = StyleSheet.create({
-  searchInput: {
-    backgroundColor: Colors.surface,
-    color: Colors.textPrimary,
-    fontFamily: Fonts.sans,
-    fontSize: 15,
-    borderRadius: Radius.input,
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    marginBottom: Spacing.base,
-  },
   chipRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: Spacing.sm,
     marginBottom: Spacing.xl,
-  },
-  chip: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.chip,
-  },
-  chipSelected: { backgroundColor: Colors.accentSoft },
-  chipUnselected: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: Colors.border,
   },
   summaryCard: {
     flexDirection: "row",

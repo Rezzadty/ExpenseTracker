@@ -1,12 +1,22 @@
-import type { PropsWithChildren } from 'react';
-import { Pressable, type PressableProps } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+// Pure presentational button component with spring press feedback.
+import type { PropsWithChildren } from "react";
+import { Pressable, type PressableProps } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-type Props = PressableProps & PropsWithChildren;
+export type ButtonProps = PressableProps & PropsWithChildren;
 
-export function AnimatedButton({ style, onPressIn, onPressOut, ...rest }: Props) {
+export default function Button({
+  style,
+  onPressIn,
+  onPressOut,
+  ...rest
+}: ButtonProps) {
   const scale = useSharedValue(1);
 
   const animStyle = useAnimatedStyle(() => ({
