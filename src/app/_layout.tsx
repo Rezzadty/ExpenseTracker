@@ -60,7 +60,7 @@ export default function RootLayout() {
           animation: "fade",
           transitionSpec: {
             animation: "timing",
-            config: { duration: 500 },
+            config: { duration: 300 },
           },
           tabBarActiveTintColor: Colors.accent,
           tabBarInactiveTintColor: Colors.textMuted,
