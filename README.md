@@ -1,16 +1,15 @@
 # ExpenseTracker
 
-A personal expense tracking mobile app to help you monitor daily spending, categorize expenses, and understand where your money goes.
+A personal expense tracking mobile app to help you monitor daily spending, set budgets, categorize expenses, and analyze spending trends.
 
-## Purpose
+## Features
 
-This app is built as a personal finance tool to:
-
-- Track daily expenses with amount, category, and notes
-- View today's spending at a glance
-- Break down spending by category (Food, Transport, Shopping, Health, Bills, Fun, Other)
-- Filter and browse expense history
-- Visualize spending distribution with progress bars
+- **Daily Expense Tracking**: Add, browse, and delete expenses with amount, category, note, and date.
+- **Budget Management**: Set and track daily spending limits with progress status.
+- **Analytics & Trends**: Timeframe filters (Day, Week, Month, Year), category breakdowns, custom donut chart, and trend comparisons.
+- **Expense History**: Category filtering, sorting by date/amount, and confirmation modal for deletions.
+- **Bottom Tab Navigation**: Quick navigation across Home, Expenses, Analytics, and Settings screens.
+- **Micro-interactions**: Fluid screen transitions, animated list items, and modal popups using React Native Reanimated.
 
 ## Tech Stack
 
@@ -25,31 +24,28 @@ This app is built as a personal finance tool to:
 | Gestures   | React Native Gesture Handler                                                          |
 | Linting    | ESLint with `eslint-config-expo`                                                      |
 
-### Not yet integrated (planned)
-
-- **PostgreSQL** — for cloud database and data persistence
-- **Charts library** — for spending trends and analytics
-
 ## Design System
 
-The app uses a custom dark theme called **"Midnight Mint"**:
+Custom dark theme **"Midnight Mint"**:
 
-- Dark background (`#0B0F0E`) with layered surfaces for depth
+- Dark background (`#0B0F0E`) with layered surface cards
 - Accent color: mint green (`#00D9A3`)
 - 7 distinct category colors for visual clarity
 - DM Sans typography throughout
-- 4px base spacing grid, 20px card radius, pill-shaped chips
+- 4px base spacing grid, modern rounded cards, pill-shaped chips
 
 ## Project Structure
 
 ```
 src/
-  app/         # Screens and navigation routes
-  components/  # UI components grouped by feature
-  constants/   # Design tokens (theme and styles)
-  hooks/       # Custom hooks (business logic and state)
-  types/       # TypeScript type definitions
-  utils/       # Helper utilities (formatting etc)
+  app/                 # File-based routes (Home, Expenses, Analytics, Settings)
+  components/
+    elements/          # Atomic reusable UI components (Button, Card, Input, Chip, etc.)
+    fragments/         # Feature-specific composite cards and modals
+  constants/           # Theme colors, category definitions, spacing tokens
+  hooks/               # Context store and custom hooks (expenses, dashboard, analytics)
+  types/               # TypeScript type definitions
+  utils/               # Formatting utilities
 ```
 
 ## Getting Started
@@ -84,4 +80,4 @@ src/
 
 ## Current Status
 
-**In development** — Dashboard and Analytics screens are functional with shared in-memory data. Persistence and remote APIs are coming next.
+**In development** — Core user flows (Dashboard, Expenses, Analytics, Settings, Budgeting, Category breakdown) are functional with shared React Context state. Remote database and cloud sync planned next.
