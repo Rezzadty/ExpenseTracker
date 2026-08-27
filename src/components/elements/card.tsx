@@ -1,6 +1,6 @@
 // Pure presentational card container with surface color depth support.
+import { useExpenses } from "@/hooks/use-expenses";
 import { View, type ViewProps } from "react-native";
-import { Colors } from "@/constants/theme";
 
 type Surface = "background" | "surface" | "surfaceRaised";
 
@@ -13,9 +13,10 @@ export default function Card({
   surface = "surface",
   ...props
 }: CardProps) {
+  const { colors } = useExpenses();
   return (
     <View
-      style={[{ backgroundColor: Colors[surface] }, style]}
+      style={[{ backgroundColor: colors[surface] }, style, { backgroundColor: colors[surface] }]}
       {...props}
     />
   );

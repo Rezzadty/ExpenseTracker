@@ -1,6 +1,7 @@
 // Fragment top navigation bar displaying application title.
 import { ThemedText } from "@/components/elements";
-import { Colors, Fonts, Spacing } from "@/constants/theme";
+import { Fonts, Spacing } from "@/constants/theme";
+import { useExpenses } from "@/hooks/use-expenses";
 import { StyleSheet, View } from "react-native";
 
 export type NavbarProps = {
@@ -8,8 +9,9 @@ export type NavbarProps = {
 };
 
 export default function Navbar({ title = "ExpenseTracker" }: NavbarProps) {
+  const { colors } = useExpenses();
   return (
-    <View style={styles.navbar}>
+    <View style={[styles.navbar, { borderBottomColor: colors.border }]}>
       <ThemedText
         type="body"
         color="textPrimary"
@@ -33,6 +35,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.base,
     paddingVertical: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
   },
 });

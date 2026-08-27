@@ -8,7 +8,7 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
-import { Colors } from "@/constants/theme";
+import { useExpenses } from "@/hooks/use-expenses";
 
 export type ProgressBarProps = {
   percentage: number;
@@ -16,6 +16,7 @@ export type ProgressBarProps = {
 };
 
 export default function ProgressBar({ percentage, color }: ProgressBarProps) {
+  const { colors } = useExpenses();
   const width = useSharedValue(0);
 
   useEffect(() => {
@@ -31,7 +32,7 @@ export default function ProgressBar({ percentage, color }: ProgressBarProps) {
   }));
 
   return (
-    <View style={styles.track}>
+    <View style={[styles.track, { backgroundColor: colors.track }]}>
       <Animated.View style={[styles.fill, barStyle]} />
     </View>
   );
@@ -41,7 +42,6 @@ const styles = StyleSheet.create({
   track: {
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.track,
     overflow: "hidden",
   },
   fill: {

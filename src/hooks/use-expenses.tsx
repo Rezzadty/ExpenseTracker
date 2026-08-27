@@ -1,6 +1,17 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import type { Category } from '@/constants/theme';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useColorScheme } from 'react-native';
+import {
+  type Category,
+  type ColorTheme,
+  DarkColors,
+  LightColors,
+} from '@/constants/theme';
 import type { Expense } from '@/types/expense';
+import {
+  convertAmount,
+  FALLBACK_RATES,
+  fetchLiveExchangeRates,
+} from '@/services/exchange-rate';
 import {
   type CurrencyCode,
   type SeparatorStyle,
@@ -22,11 +33,57 @@ const SEED: Expense[] = [
 
 let nextId = 11;
 
+export type ThemeMode = 'system' | 'dark' | 'light';
+
 function useExpensesStore() {
+  const systemColorScheme = useColorScheme();
   const [expenses, setExpenses] = useState<Expense[]>(SEED);
   const [dailyBudget, setDailyBudget] = useState<number>(200000);
-  const [currency, setCurrency] = useState<CurrencyCode>('IDR');
+  const [currency, setCurrencyState] = useState<CurrencyCode>('IDR');
   const [separatorStyle, setSeparatorStyle] = useState<SeparatorStyle>('dot');
+  const [rates, setRates] = useState<Record<CurrencyCode, number>>(FALLBACK_RATES);
+  const [isRatesLive, setIsRatesLive] = useState<boolean>(false);
+  const [themeMode, setThemeMode] = useState<ThemeMode>('dark');
+  const [reminderEnabled, setReminderEnabled] = useState<boolean>(true);
+  const [reminderTime, setReminderTime] = useState<string>('20:00');
+
+  const isDark = useMemo(() => {
+    if (themeMode === 'system') return systemColorScheme !== 'light';
+    return themeMode === 'dark';
+  }, [themeMode, systemColorScheme]);
+
+  const colors: ColorTheme = useMemo(() => {
+    return isDark ? DarkColors : LightColors;
+  }, [isDark]);
+
+  useEffect(() => {
+    let mounted = true;
+    fetchLiveExchangeRates().then((liveRates) => {
+      if (mounted) {
+        setRates(liveRates);
+        setIsRatesLive(true);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const setCurrency = useCallback(
+    (newCurrency: CurrencyCode) => {
+      if (newCurrency === currency) return;
+      // Convert all expenses and daily budget using current rates
+      setExpenses((prev) =>
+        prev.map((e) => ({
+          ...e,
+          amount: convertAmount(e.amount, currency, newCurrency, rates),
+        })),
+      );
+      setDailyBudget((prev) => convertAmount(prev, currency, newCurrency, rates));
+      setCurrencyState(newCurrency);
+    },
+    [currency, rates],
+  );
 
   const addExpense = useCallback((data: Omit<Expense, 'id'>) => {
     setExpenses((prev) => [{ ...data, id: String(nextId++) }, ...prev]);
@@ -70,6 +127,16 @@ function useExpensesStore() {
     separatorStyle,
     setSeparatorStyle,
     formatAmount,
+    rates,
+    isRatesLive,
+    themeMode,
+    setThemeMode,
+    isDark,
+    colors,
+    reminderEnabled,
+    setReminderEnabled,
+    reminderTime,
+    setReminderTime,
     addExpense,
     deleteExpense,
     clearAllExpenses,
@@ -93,3 +160,4 @@ export function useExpenses() {
   if (!ctx) throw new Error('useExpenses must be used within ExpensesProvider');
   return ctx;
 }
+

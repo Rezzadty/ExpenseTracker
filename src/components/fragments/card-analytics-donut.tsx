@@ -2,7 +2,6 @@
 import { ThemedText } from "@/components/elements";
 import {
   CategoryColors,
-  Colors,
   Fonts,
   Spacing,
   type Category,
@@ -26,7 +25,7 @@ export default function CardAnalyticsDonut({
   data,
   total,
 }: CardAnalyticsDonutProps) {
-  const { formatAmount } = useExpenses();
+  const { formatAmount, colors } = useExpenses();
   const size = 200;
   const stroke = 20;
 
@@ -51,7 +50,7 @@ export default function CardAnalyticsDonut({
               height: size,
               borderRadius: size / 2,
               borderWidth: stroke,
-              borderColor: Colors.track,
+              borderColor: colors.track,
             },
           ]}
         />

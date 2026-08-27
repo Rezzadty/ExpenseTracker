@@ -1,6 +1,6 @@
 // Fragment composite card showing today total spending, daily budget, and remaining balance.
 import { Card, ProgressBar, ThemedText } from "@/components/elements";
-import { Colors, Fonts, Radius, Spacing } from "@/constants/theme";
+import { Fonts, Radius, Spacing } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
 import { formatDate } from "@/utils/format";
 import { StyleSheet, View } from "react-native";
@@ -14,12 +14,12 @@ export default function CardBalance({
   todaySpent,
   dailyBudget,
 }: CardBalanceProps) {
-  const { formatAmount } = useExpenses();
+  const { formatAmount, colors } = useExpenses();
   const percentage =
     dailyBudget > 0 ? Math.min((todaySpent / dailyBudget) * 100, 100) : 0;
   const remaining = dailyBudget - todaySpent;
   const isOverBudget = remaining < 0;
-  const barColor = isOverBudget ? Colors.danger : Colors.accent;
+  const barColor = isOverBudget ? colors.danger : colors.accent;
 
   return (
     <Card style={styles.spendingCard}>
@@ -39,7 +39,7 @@ export default function CardBalance({
         </ThemedText>
       </View>
 
-      <View style={styles.budgetRow}>
+      <View style={[styles.budgetRow, { borderTopColor: colors.border }]}>
         <View>
           <ThemedText type="caption" color="textMuted">
             Daily Budget
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.card,
     padding: Spacing.lg,
     marginBottom: Spacing.xl,
-    boxShadow: "0px 8px 16px rgba(0,0,0,0.35)",
+    boxShadow: "0px 8px 16px rgba(0,0,0,0.12)",
   },
   spendingRow: {
     flexDirection: "row",
@@ -92,7 +92,6 @@ const styles = StyleSheet.create({
     marginTop: Spacing.base,
     paddingTop: Spacing.base,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
   },
   progressWrapper: {
     marginTop: Spacing.md,

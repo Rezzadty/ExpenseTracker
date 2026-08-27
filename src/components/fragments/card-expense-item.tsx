@@ -2,7 +2,6 @@
 import { ThemedText } from "@/components/elements";
 import {
   CategoryColors,
-  Colors,
   Fonts,
   Radius,
   Spacing,
@@ -20,10 +19,10 @@ export default function CardExpenseItem({
   item,
   onDelete,
 }: CardExpenseItemProps) {
-  const { formatAmount } = useExpenses();
+  const { formatAmount, colors } = useExpenses();
 
   return (
-    <View style={styles.expenseRow}>
+    <View style={[styles.expenseRow, { backgroundColor: colors.surface }]}>
       <View
         style={[
           styles.categoryBadge,
@@ -70,7 +69,6 @@ const styles = StyleSheet.create({
   expenseRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.surface,
     borderRadius: Radius.listRow,
     padding: Spacing.base,
     marginBottom: Spacing.sm,

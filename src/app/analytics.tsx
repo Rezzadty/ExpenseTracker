@@ -11,7 +11,7 @@ import {
   CardCategoryProgress,
   Navbar,
 } from "@/components/fragments";
-import { Colors, Radius, Spacing, type Category } from "@/constants/theme";
+import { Radius, Spacing, type Category } from "@/constants/theme";
 import { useAnalytics, type Timeframe } from "@/hooks/use-analytics";
 import { useExpenses } from "@/hooks/use-expenses";
 import { ScrollView, StyleSheet, View } from "react-native";
@@ -30,7 +30,7 @@ const PERIOD_LABELS: Record<Timeframe, string> = {
 };
 
 export default function AnalyticsScreen() {
-  const { formatAmount } = useExpenses();
+  const { formatAmount, colors } = useExpenses();
   const {
     timeframe,
     setTimeframe,
@@ -61,7 +61,7 @@ export default function AnalyticsScreen() {
               ))}
             </View>
 
-            <View style={styles.totalCard}>
+            <View style={[styles.totalCard, { backgroundColor: colors.surface }]}>
               <ThemedText type="sectionTitle" color="textSecondary">
                 {PERIOD_LABELS[timeframe]}
               </ThemedText>
@@ -149,7 +149,7 @@ export default function AnalyticsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
+  container: { flex: 1 },
   safe: { flex: 1 },
   content: { padding: Spacing.base, paddingBottom: 100 },
   timeframeRow: {
@@ -158,11 +158,10 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.base,
   },
   totalCard: {
-    backgroundColor: Colors.surface,
     borderRadius: Radius.card,
     padding: Spacing.lg,
     marginBottom: Spacing.xl,
-    boxShadow: "0px 8px 16px rgba(0,0,0,0.35)",
+    boxShadow: "0px 8px 16px rgba(0,0,0,0.15)",
   },
   card: {
     borderRadius: Radius.card,

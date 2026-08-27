@@ -1,6 +1,6 @@
-// Root layout — loads DM Sans fonts, holds splash screen until ready, sets dark status bar.
-import { Colors, Fonts } from "@/constants/theme";
-import { ExpensesProvider } from "@/hooks/use-expenses";
+// Root layout — loads DM Sans fonts, holds splash screen until ready, provides dynamic theme and tabs.
+import { Fonts } from "@/constants/theme";
+import { ExpensesProvider, useExpenses } from "@/hooks/use-expenses";
 import {
   DMSans_400Regular,
   DMSans_500Medium,
@@ -23,25 +23,12 @@ const icons = {
   settings: require("@/assets/icons/settings_icon.png"),
 };
 
-export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    "DMSans-Regular": DMSans_400Regular,
-    "DMSans-Medium": DMSans_500Medium,
-    "DMSans-SemiBold": DMSans_600SemiBold,
-    "DMSans-Bold": DMSans_700Bold,
-  });
-
-  useEffect(() => {
-    if (loaded || error) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded, error]);
-
-  if (!loaded && !error) return null;
+function RootNavigator() {
+  const { colors, isDark } = useExpenses();
 
   return (
-    <ExpensesProvider>
-      <StatusBar style="light" />
+    <>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -49,23 +36,23 @@ export default function RootLayout() {
           tabBarPosition: "bottom",
           tabBarLabelPosition: "below-icon",
           tabBarStyle: {
-            backgroundColor: Colors.surface,
+            backgroundColor: colors.surface,
             borderTopWidth: 1,
-            borderTopColor: Colors.border,
+            borderTopColor: colors.border,
             height: 70,
             paddingTop: 8,
             paddingBottom: 8,
             elevation: 8,
           },
           animation: "fade",
-          tabBarActiveTintColor: Colors.accent,
-          tabBarInactiveTintColor: Colors.textMuted,
+          tabBarActiveTintColor: colors.accent,
+          tabBarInactiveTintColor: colors.textMuted,
           tabBarLabelStyle: {
             fontFamily: Fonts.sans,
             fontSize: 11,
             marginTop: 2,
           },
-          sceneStyle: { backgroundColor: Colors.background },
+          sceneStyle: { backgroundColor: colors.background },
         }}
       >
         <Tabs.Screen
@@ -129,6 +116,29 @@ export default function RootLayout() {
           }}
         />
       </Tabs>
+    </>
+  );
+}
+
+export default function RootLayout() {
+  const [loaded, error] = useFonts({
+    "DMSans-Regular": DMSans_400Regular,
+    "DMSans-Medium": DMSans_500Medium,
+    "DMSans-SemiBold": DMSans_600SemiBold,
+    "DMSans-Bold": DMSans_700Bold,
+  });
+
+  useEffect(() => {
+    if (loaded || error) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, error]);
+
+  if (!loaded && !error) return null;
+
+  return (
+    <ExpensesProvider>
+      <RootNavigator />
     </ExpensesProvider>
   );
 }

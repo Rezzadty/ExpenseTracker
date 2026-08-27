@@ -1,8 +1,23 @@
-// "Midnight Mint" design system — all color, typography, spacing, and shape tokens for the app.
+// Design system — color palettes, typography, spacing, and shape tokens.
 import { Platform } from "react-native";
 
-// Core palette — every UI color must come from here.
-export const Colors = {
+export interface ColorTheme {
+  background: string;
+  surface: string;
+  surfaceRaised: string;
+  border: string;
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
+  accent: string;
+  accentSoft: string;
+  textOnAccent: string;
+  danger: string;
+  warning: string;
+  track: string;
+}
+
+export const DarkColors: ColorTheme = {
   background: "#0B0F0E",
   surface: "#131917",
   surfaceRaised: "#1B2320",
@@ -16,7 +31,27 @@ export const Colors = {
   danger: "#FF6B6B",
   warning: "#FFC24D",
   track: "rgba(255,255,255,0.08)",
-} as const;
+};
+
+export const LightColors: ColorTheme = {
+  background: "#F5F8F6",
+  surface: "#FFFFFF",
+  surfaceRaised: "#EDF3F0",
+  border: "rgba(4,36,27,0.08)",
+  textPrimary: "#0F1715",
+  textSecondary: "#52605B",
+  textMuted: "#8C9B95",
+  accent: "#00B386",
+  accentSoft: "rgba(0,179,134,0.10)",
+  textOnAccent: "#FFFFFF",
+  danger: "#E54848",
+  warning: "#D97706",
+  track: "rgba(0,0,0,0.06)",
+};
+
+// Default export is dark colors for backwards-compatibility
+export const Colors = DarkColors;
+
 
 // Per-category accent colors — used in chips, bars, badges.
 export const CategoryColors = {

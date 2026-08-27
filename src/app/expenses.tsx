@@ -5,14 +5,14 @@ import {
   ModalAddExpense,
   Navbar,
 } from "@/components/fragments";
-import { Colors, Fonts, Spacing } from "@/constants/theme";
+import { Fonts, Spacing } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ExpensesScreen() {
-  const { expenses, addExpense, deleteExpense } = useExpenses();
+  const { expenses, addExpense, deleteExpense, colors } = useExpenses();
   const [showAdd, setShowAdd] = useState(false);
 
   return (
@@ -39,7 +39,10 @@ export default function ExpensesScreen() {
           </ScrollView>
         </AnimatedScreen>
 
-        <Pressable style={styles.fab} onPress={() => setShowAdd(true)}>
+        <Pressable
+          style={[styles.fab, { backgroundColor: colors.accent }]}
+          onPress={() => setShowAdd(true)}
+        >
           <ThemedText
             type="body"
             color="textOnAccent"
@@ -64,7 +67,7 @@ export default function ExpensesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
+  container: { flex: 1 },
   safe: { flex: 1 },
   content: { padding: Spacing.base, paddingBottom: 100 },
   fab: {
@@ -74,7 +77,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.accent,
     alignItems: "center",
     justifyContent: "center",
     elevation: 8,

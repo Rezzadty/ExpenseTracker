@@ -1,5 +1,6 @@
 // Pure presentational chip/badge selector component.
-import { Colors, Fonts, Radius, Spacing } from "@/constants/theme";
+import { Fonts, Radius, Spacing } from "@/constants/theme";
+import { useExpenses } from "@/hooks/use-expenses";
 import { Pressable, StyleSheet, type PressableProps } from "react-native";
 import ThemedText from "./themed-text";
 
@@ -9,11 +10,14 @@ export type ChipProps = PressableProps & {
 };
 
 export default function Chip({ label, selected = false, style, ...rest }: ChipProps) {
+  const { colors } = useExpenses();
   return (
     <Pressable
       style={[
         styles.chip,
-        selected ? styles.chipSelected : styles.chipUnselected,
+        selected
+          ? { backgroundColor: colors.accentSoft }
+          : { backgroundColor: "transparent", borderWidth: 1, borderColor: colors.border },
         typeof style === "function" ? undefined : style,
       ]}
       {...rest}
@@ -34,13 +38,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: Radius.chip,
-  },
-  chipSelected: {
-    backgroundColor: Colors.accentSoft,
-  },
-  chipUnselected: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: Colors.border,
   },
 });

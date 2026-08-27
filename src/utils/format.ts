@@ -25,7 +25,11 @@ export function formatMoney(
   const targetSeparator = separator ?? config.separator;
   const targetLocale = targetSeparator === 'dot' ? 'id-ID' : 'en-US';
 
-  const formattedNumber = n.toLocaleString(targetLocale);
+  const isZeroDecimal = currency === 'IDR' || currency === 'JPY';
+  const formattedNumber = n.toLocaleString(targetLocale, {
+    minimumFractionDigits: isZeroDecimal ? 0 : 2,
+    maximumFractionDigits: isZeroDecimal ? 0 : 2,
+  });
   return `${config.symbol} ${formattedNumber}`;
 }
 

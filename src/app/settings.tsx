@@ -1,4 +1,4 @@
-// Settings screen providing currency & locale preferences and about / version information.
+// Settings screen providing preferences, appearance & notifications, and about / version info.
 import {
   AnimatedScreen,
   Button,
@@ -8,14 +8,14 @@ import {
   ThemedView,
 } from "@/components/elements";
 import { Navbar } from "@/components/fragments";
-import { Colors, Fonts, Radius, Spacing } from "@/constants/theme";
-import { useExpenses } from "@/hooks/use-expenses";
+import { Fonts, Radius, Spacing } from "@/constants/theme";
+import { useExpenses, type ThemeMode } from "@/hooks/use-expenses";
 import {
   type CurrencyCode,
   type SeparatorStyle,
 } from "@/utils/format";
 import * as Linking from "expo-linking";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, Switch, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const CURRENCIES: { label: string; value: CurrencyCode }[] = [
@@ -31,6 +31,14 @@ const SEPARATORS: { label: string; value: SeparatorStyle }[] = [
   { label: "100,000 (Comma)", value: "comma" },
 ];
 
+const THEMES: { label: string; value: ThemeMode }[] = [
+  { label: "Dark", value: "dark" },
+  { label: "Light", value: "light" },
+  { label: "System", value: "system" },
+];
+
+const REMINDER_TIMES = ["19:00", "20:00", "21:00", "22:00"];
+
 export default function SettingsScreen() {
   const {
     currency,
@@ -39,6 +47,15 @@ export default function SettingsScreen() {
     setSeparatorStyle,
     expenses,
     formatAmount,
+    rates,
+    isRatesLive,
+    themeMode,
+    setThemeMode,
+    colors,
+    reminderEnabled,
+    setReminderEnabled,
+    reminderTime,
+    setReminderTime,
   } = useExpenses();
 
   const handleOpenLink = (url: string) => {
@@ -100,18 +117,99 @@ export default function SettingsScreen() {
                 ))}
               </View>
 
-              <View style={styles.previewBox}>
-                <ThemedText type="caption" color="textSecondary">
-                  Preview:
-                </ThemedText>
+              <View style={[styles.previewBox, { borderTopColor: colors.border }]}>
+                <View>
+                  <ThemedText type="caption" color="textSecondary">
+                    Preview (250k IDR):
+                  </ThemedText>
+                  <ThemedText type="caption" color="textMuted">
+                    {isRatesLive ? "Rates: Live API" : "Rates: Default/Cached"}
+                  </ThemedText>
+                </View>
                 <ThemedText
                   type="body"
                   color="accent"
                   style={{ fontFamily: Fonts.sansBold, fontWeight: "700" }}
                 >
-                  {formatAmount(250000)}
+                  {formatAmount(
+                    currency === "IDR"
+                      ? 250000
+                      : (250000 / rates.IDR) * rates[currency],
+                  )}
                 </ThemedText>
               </View>
+            </Card>
+
+            {/* Appearance & Notifications Section */}
+            <ThemedText
+              type="sectionTitle"
+              color="textSecondary"
+              style={styles.sectionHeader}
+            >
+              Appearance & Notifications
+            </ThemedText>
+
+            <Card style={styles.card}>
+              <ThemedText
+                type="caption"
+                color="textMuted"
+                style={{ marginBottom: Spacing.xs }}
+              >
+                Theme Mode
+              </ThemedText>
+              <View style={styles.chipRow}>
+                {THEMES.map((t) => (
+                  <Chip
+                    key={t.value}
+                    label={t.label}
+                    selected={themeMode === t.value}
+                    onPress={() => setThemeMode(t.value)}
+                  />
+                ))}
+              </View>
+
+              <View style={[styles.infoRow, { marginTop: Spacing.md, borderBottomWidth: 0 }]}>
+                <View>
+                  <ThemedText
+                    type="body"
+                    color="textPrimary"
+                    style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}
+                  >
+                    Daily Reminder
+                  </ThemedText>
+                  <ThemedText type="caption" color="textMuted">
+                    Prompt to log daily expenses
+                  </ThemedText>
+                </View>
+                <Switch
+                  value={reminderEnabled}
+                  onValueChange={setReminderEnabled}
+                  trackColor={{ false: colors.track, true: colors.accent }}
+                  thumbColor={colors.textPrimary}
+                />
+              </View>
+
+              {reminderEnabled && (
+                <View style={{ marginTop: Spacing.md }}>
+                  <ThemedText
+                    type="caption"
+                    color="textMuted"
+                    style={{ marginBottom: Spacing.xs }}
+                  >
+                    Reminder Schedule Time
+                  </ThemedText>
+                  <View style={styles.chipRow}>
+                    {REMINDER_TIMES.map((time) => (
+                      <Chip
+                        key={time}
+                        label={time}
+                        selected={reminderTime === time}
+                        onPress={() => setReminderTime(time)}
+                      />
+                    ))}
+                  </View>
+                </View>
+              )}
             </Card>
 
             {/* About & Version Section */}
@@ -124,7 +222,7 @@ export default function SettingsScreen() {
             </ThemedText>
 
             <Card style={styles.card}>
-              <View style={styles.infoRow}>
+              <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
                 <ThemedText type="caption" color="textMuted">
                   App Name
                 </ThemedText>
@@ -137,7 +235,7 @@ export default function SettingsScreen() {
                 </ThemedText>
               </View>
 
-              <View style={styles.infoRow}>
+              <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
                 <ThemedText type="caption" color="textMuted">
                   Version
                 </ThemedText>
@@ -150,7 +248,7 @@ export default function SettingsScreen() {
                 </ThemedText>
               </View>
 
-              <View style={styles.infoRow}>
+              <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
                 <ThemedText type="caption" color="textMuted">
                   Total Records
                 </ThemedText>
@@ -159,19 +257,23 @@ export default function SettingsScreen() {
                   color="textPrimary"
                   style={styles.infoValue}
                 >
-                  {expenses.length} transaction{expenses.length !== 1 ? "s" : ""}
+                  {expenses.length} transaction
+                  {expenses.length !== 1 ? "s" : ""}
                 </ThemedText>
               </View>
 
               <View style={styles.buttonRow}>
                 <Button
                   onPress={() => handleOpenLink("https://github.com")}
-                  style={styles.docButton}
+                  style={[styles.docButton, { borderColor: colors.accent }]}
                 >
                   <ThemedText
                     type="body"
                     color="accent"
-                    style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}
+                    style={{
+                      fontFamily: Fonts.sansSemiBold,
+                      fontWeight: "600",
+                    }}
                   >
                     Documentation & Terms
                   </ThemedText>
@@ -186,7 +288,7 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
+  container: { flex: 1 },
   safe: { flex: 1 },
   content: { padding: Spacing.base, paddingBottom: 100 },
   sectionHeader: {
@@ -197,7 +299,6 @@ const styles = StyleSheet.create({
     borderRadius: Radius.card,
     padding: Spacing.lg,
     marginBottom: Spacing.lg,
-    backgroundColor: Colors.surface,
   },
   chipRow: {
     flexDirection: "row",
@@ -209,7 +310,6 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
     paddingTop: Spacing.md,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -220,7 +320,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: Spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
   },
   infoValue: {
     fontFamily: Fonts.sansSemiBold,
@@ -235,11 +334,11 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     borderRadius: Radius.button,
     borderWidth: 1,
-    borderColor: Colors.accent,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "transparent",
   },
 });
+
 
 

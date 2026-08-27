@@ -1,5 +1,6 @@
 // Pure presentational themed typography component with preset styles.
-import { Colors, Fonts } from "@/constants/theme";
+import { Fonts } from "@/constants/theme";
+import { useExpenses } from "@/hooks/use-expenses";
 import { StyleSheet, Text, type TextProps } from "react-native";
 
 type TextType = "money" | "sectionTitle" | "body" | "caption" | "default";
@@ -23,10 +24,11 @@ export default function ThemedText({
   color = "textPrimary",
   ...rest
 }: ThemedTextProps) {
+  const { colors } = useExpenses();
   return (
     <Text
       style={[
-        { color: Colors[color], fontFamily: Fonts.sans },
+        { color: colors[color], fontFamily: Fonts.sans },
         type === "money" && styles.money,
         type === "sectionTitle" && styles.sectionTitle,
         type === "body" && styles.body,

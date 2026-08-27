@@ -1,6 +1,7 @@
-// Fragment modal dialog for confirming item deletion with custom dark theme styling.
+// Fragment modal dialog for confirming item deletion with dynamic theme styling.
 import { AnimatedModal, ThemedText } from "@/components/elements";
-import { Colors, Fonts, Radius, Spacing } from "@/constants/theme";
+import { Fonts, Radius, Spacing } from "@/constants/theme";
+import { useExpenses } from "@/hooks/use-expenses";
 import { Pressable, StyleSheet, View } from "react-native";
 
 export type ModalConfirmDeleteProps = {
@@ -18,9 +19,11 @@ export default function ModalConfirmDelete({
   onCancel,
   onConfirm,
 }: ModalConfirmDeleteProps) {
+  const { colors } = useExpenses();
+
   return (
     <AnimatedModal visible={visible} onClose={onCancel}>
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <ThemedText
           type="body"
           color="textPrimary"
@@ -52,7 +55,7 @@ export default function ModalConfirmDelete({
               Cancel
             </ThemedText>
           </Pressable>
-          <Pressable style={styles.deleteBtn} onPress={onConfirm}>
+          <Pressable style={[styles.deleteBtn, { backgroundColor: colors.danger }]} onPress={onConfirm}>
             <ThemedText
               type="body"
               color="textOnAccent"
@@ -69,11 +72,9 @@ export default function ModalConfirmDelete({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.surface,
     borderRadius: Radius.card,
     padding: Spacing.lg,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   actionRow: {
     flexDirection: "row",
@@ -88,7 +89,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   deleteBtn: {
-    backgroundColor: Colors.danger,
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.lg,
     borderRadius: Radius.button,

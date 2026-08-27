@@ -1,5 +1,5 @@
 // Pure presentational themed container surface view.
-import { Colors } from "@/constants/theme";
+import { useExpenses } from "@/hooks/use-expenses";
 import { View, type ViewProps } from "react-native";
 
 type Surface = "background" | "surface" | "surfaceRaised";
@@ -13,9 +13,10 @@ export default function ThemedView({
   surface = "background",
   ...props
 }: ThemedViewProps) {
+  const { colors } = useExpenses();
   return (
     <View
-      style={[{ backgroundColor: Colors[surface] }, style]}
+      style={[{ backgroundColor: colors[surface] }, style, { backgroundColor: colors[surface] }]}
       {...props}
     />
   );

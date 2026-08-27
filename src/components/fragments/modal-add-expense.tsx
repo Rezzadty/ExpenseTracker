@@ -7,7 +7,6 @@ import {
 } from "@/components/elements";
 import {
   CategoryColors,
-  Colors,
   Fonts,
   Radius,
   Spacing,
@@ -34,7 +33,7 @@ export default function ModalAddExpense({
   onClose,
   onSave,
 }: ModalAddExpenseProps) {
-  const { currency } = useExpenses();
+  const { currency, colors } = useExpenses();
   const symbol = CURRENCY_OPTIONS[currency]?.symbol || "Rp";
 
   const [amount, setAmount] = useState("");
@@ -42,8 +41,9 @@ export default function ModalAddExpense({
   const [category, setCategory] = useState<Category>("Food");
 
   const handleSave = () => {
-    const amt = parseInt(amount, 10);
-    if (!amt || !note.trim()) return;
+    const raw = amount.replace(/,/g, '.');
+    const amt = parseFloat(raw);
+    if (isNaN(amt) || amt <= 0 || !note.trim()) return;
     onSave({
       amount: amt,
       category,
@@ -58,7 +58,7 @@ export default function ModalAddExpense({
 
   return (
     <AnimatedModal visible={visible} onClose={onClose}>
-      <View style={styles.content}>
+      <View style={[styles.content, { backgroundColor: colors.surface }]}>
         <View style={styles.header}>
           <ThemedText
             type="body"
@@ -125,7 +125,7 @@ export default function ModalAddExpense({
           ))}
         </View>
 
-        <Pressable style={styles.saveBtn} onPress={handleSave}>
+        <Pressable style={[styles.saveBtn, { backgroundColor: colors.accent }]} onPress={handleSave}>
           <ThemedText
             type="body"
             color="textOnAccent"
@@ -141,7 +141,6 @@ export default function ModalAddExpense({
 
 const styles = StyleSheet.create({
   content: {
-    backgroundColor: Colors.surface,
     borderRadius: Radius.card,
     padding: Spacing.lg,
   },
@@ -161,7 +160,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: Colors.accent,
     paddingVertical: Spacing.md,
     borderRadius: Radius.button,
     marginTop: Spacing.lg,

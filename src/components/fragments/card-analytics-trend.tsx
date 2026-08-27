@@ -1,7 +1,8 @@
 // Fragment chart displaying daily or weekly trend based on selected timeframe.
 import { ThemedText } from "@/components/elements";
-import { Colors, Spacing } from "@/constants/theme";
+import { Spacing } from "@/constants/theme";
 import type { Timeframe } from "@/hooks/use-analytics";
+import { useExpenses } from "@/hooks/use-expenses";
 import type { Expense } from "@/types/expense";
 import { StyleSheet, View } from "react-native";
 
@@ -59,6 +60,7 @@ export default function CardAnalyticsTrend({
   expenses,
   timeframe,
 }: CardAnalyticsTrendProps) {
+  const { colors } = useExpenses();
   const data =
     timeframe === "monthly" ? getMonthlyTrend(expenses) : getDailyTrend(expenses);
   const max = Math.max(...data.map((d) => d.amount), 1);
@@ -70,11 +72,11 @@ export default function CardAnalyticsTrend({
           const heightPct = (item.amount / max) * 100;
           return (
             <View key={i} style={styles.barCol}>
-              <View style={styles.barTrack}>
+              <View style={[styles.barTrack, { backgroundColor: colors.track }]}>
                 <View
                   style={[
                     styles.barFill,
-                    { height: `${Math.max(heightPct, 2)}%` },
+                    { height: `${Math.max(heightPct, 2)}%`, backgroundColor: colors.accent },
                   ]}
                 />
               </View>
@@ -106,9 +108,8 @@ const styles = StyleSheet.create({
     width: 24,
     height: 100,
     borderRadius: 12,
-    backgroundColor: Colors.track,
     justifyContent: "flex-end",
     overflow: "hidden",
   },
-  barFill: { width: 24, borderRadius: 12, backgroundColor: Colors.accent },
+  barFill: { width: 24, borderRadius: 12 },
 });

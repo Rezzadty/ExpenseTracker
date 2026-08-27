@@ -16,13 +16,13 @@ import {
   Navbar,
 } from "@/components/fragments";
 import {
-  Colors,
   Fonts,
   Radius,
   Spacing,
   type Category,
 } from "@/constants/theme";
 import { useDashboard } from "@/hooks/use-dashboard";
+import { useExpenses } from "@/hooks/use-expenses";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -38,6 +38,7 @@ const CATEGORIES: ("All" | Category)[] = [
 ];
 
 export default function DashboardScreen() {
+  const { colors } = useExpenses();
   const {
     addExpense,
     todaySpent,
@@ -73,7 +74,7 @@ export default function DashboardScreen() {
 
             <View style={styles.actionRow}>
               <Button
-                style={styles.actionBtn}
+                style={[styles.actionBtn, { backgroundColor: colors.accent }]}
                 onPress={() => setShowAddExpense(true)}
               >
                 <ThemedText
@@ -92,7 +93,7 @@ export default function DashboardScreen() {
                 </ThemedText>
               </Button>
               <Button
-                style={[styles.actionBtn, styles.actionBtnOutline]}
+                style={[styles.actionBtn, styles.actionBtnOutline, { borderColor: colors.accent }]}
                 onPress={() => setShowBudget(true)}
               >
                 <ThemedText
@@ -168,7 +169,7 @@ export default function DashboardScreen() {
                 ))}
                 {filtered.length > 4 && (
                   <Pressable
-                    style={styles.seeAllBtn}
+                    style={[styles.seeAllBtn, { backgroundColor: colors.surface }]}
                     onPress={() => setExpanded((v) => !v)}
                   >
                     <ThemedText
@@ -205,7 +206,7 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
+  container: { flex: 1 },
   safe: { flex: 1 },
   listContent: { padding: Spacing.base, paddingBottom: 100 },
   actionRow: {
@@ -218,14 +219,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: Colors.accent,
     paddingVertical: Spacing.md,
     borderRadius: Radius.button,
   },
   actionBtnOutline: {
     backgroundColor: "transparent",
     borderWidth: 1.5,
-    borderColor: Colors.accent,
   },
   card: {
     borderRadius: Radius.card,
@@ -242,7 +241,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: Spacing.md,
     marginTop: Spacing.sm,
-    backgroundColor: Colors.surface,
     borderRadius: Radius.listRow,
   },
 });
