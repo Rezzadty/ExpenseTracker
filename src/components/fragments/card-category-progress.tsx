@@ -1,7 +1,7 @@
 // Fragment component displaying category spending with label, formatted amount, and animated progress bar.
 import { ProgressBar, ThemedText } from "@/components/elements";
 import { CategoryColors, Spacing, type Category } from "@/constants/theme";
-import { formatMoney } from "@/utils/format";
+import { useExpenses } from "@/hooks/use-expenses";
 import { StyleSheet, View } from "react-native";
 
 export type CardCategoryProgressProps = {
@@ -15,6 +15,7 @@ export default function CardCategoryProgress({
   amount,
   max,
 }: CardCategoryProgressProps) {
+  const { formatAmount } = useExpenses();
   const percentage = max > 0 ? (amount / max) * 100 : 0;
   const color = CategoryColors[category];
 
@@ -26,7 +27,7 @@ export default function CardCategoryProgress({
           {category}
         </ThemedText>
         <ThemedText type="body" color="textSecondary">
-          {formatMoney(amount)}
+          {formatAmount(amount)}
         </ThemedText>
       </View>
       <ProgressBar percentage={percentage} color={color} />

@@ -7,7 +7,7 @@ import {
   Spacing,
   type Category,
 } from "@/constants/theme";
-import { formatMoney } from "@/utils/format";
+import { useExpenses } from "@/hooks/use-expenses";
 import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 
@@ -26,6 +26,7 @@ export default function CardAnalyticsDonut({
   data,
   total,
 }: CardAnalyticsDonutProps) {
+  const { formatAmount } = useExpenses();
   const size = 200;
   const stroke = 20;
 
@@ -93,7 +94,7 @@ export default function CardAnalyticsDonut({
               fontSize: 18,
             }}
           >
-            {formatMoney(total)}
+            {formatAmount(total)}
           </ThemedText>
         </View>
       </View>

@@ -7,8 +7,8 @@ import {
   Radius,
   Spacing,
 } from "@/constants/theme";
+import { useExpenses } from "@/hooks/use-expenses";
 import type { Expense } from "@/types/expense";
-import { formatMoney } from "@/utils/format";
 import { Pressable, StyleSheet, View } from "react-native";
 
 export type CardExpenseItemProps = {
@@ -20,6 +20,8 @@ export default function CardExpenseItem({
   item,
   onDelete,
 }: CardExpenseItemProps) {
+  const { formatAmount } = useExpenses();
+
   return (
     <View style={styles.expenseRow}>
       <View
@@ -50,7 +52,7 @@ export default function CardExpenseItem({
           type="body"
           style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}
         >
-          {formatMoney(item.amount)}
+          {formatAmount(item.amount)}
         </ThemedText>
         {onDelete && (
           <Pressable onPress={() => onDelete(item.id)} hitSlop={8}>

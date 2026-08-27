@@ -1,6 +1,8 @@
 // Fragment modal dialog for setting daily spending budget.
 import { AnimatedModal, Input, ThemedText } from "@/components/elements";
 import { Colors, Fonts, Radius, Spacing } from "@/constants/theme";
+import { useExpenses } from "@/hooks/use-expenses";
+import { CURRENCY_OPTIONS } from "@/utils/format";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
@@ -17,6 +19,8 @@ export default function ModalSetBudget({
   onClose,
   onSave,
 }: ModalSetBudgetProps) {
+  const { currency } = useExpenses();
+  const symbol = CURRENCY_OPTIONS[currency]?.symbol || "Rp";
   const [budget, setBudget] = useState("");
 
   const handleSave = () => {
@@ -59,7 +63,7 @@ export default function ModalSetBudget({
           color="textSecondary"
           style={{ marginBottom: Spacing.xs }}
         >
-          Daily Budget (Rp)
+          {`Daily Budget (${symbol})`}
         </ThemedText>
         <Input
           placeholder={`Current: ${initialBudget}`}

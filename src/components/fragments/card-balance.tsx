@@ -1,7 +1,8 @@
 // Fragment composite card showing today total spending, daily budget, and remaining balance.
 import { Card, ProgressBar, ThemedText } from "@/components/elements";
 import { Colors, Fonts, Radius, Spacing } from "@/constants/theme";
-import { formatDate, formatMoney } from "@/utils/format";
+import { useExpenses } from "@/hooks/use-expenses";
+import { formatDate } from "@/utils/format";
 import { StyleSheet, View } from "react-native";
 
 export type CardBalanceProps = {
@@ -13,6 +14,7 @@ export default function CardBalance({
   todaySpent,
   dailyBudget,
 }: CardBalanceProps) {
+  const { formatAmount } = useExpenses();
   const percentage =
     dailyBudget > 0 ? Math.min((todaySpent / dailyBudget) * 100, 100) : 0;
   const remaining = dailyBudget - todaySpent;
@@ -33,7 +35,7 @@ export default function CardBalance({
       </ThemedText>
       <View style={styles.spendingRow}>
         <ThemedText type="money" color="textPrimary">
-          {formatMoney(todaySpent)}
+          {formatAmount(todaySpent)}
         </ThemedText>
       </View>
 
@@ -47,7 +49,7 @@ export default function CardBalance({
             color="textSecondary"
             style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}
           >
-            {formatMoney(dailyBudget)}
+            {formatAmount(dailyBudget)}
           </ThemedText>
         </View>
         <View style={{ alignItems: "flex-end" }}>
@@ -59,7 +61,7 @@ export default function CardBalance({
             color={isOverBudget ? "danger" : "accent"}
             style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}
           >
-            {formatMoney(Math.abs(remaining))}
+            {formatAmount(Math.abs(remaining))}
           </ThemedText>
         </View>
       </View>

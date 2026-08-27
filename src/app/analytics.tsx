@@ -13,7 +13,7 @@ import {
 } from "@/components/fragments";
 import { Colors, Radius, Spacing, type Category } from "@/constants/theme";
 import { useAnalytics, type Timeframe } from "@/hooks/use-analytics";
-import { formatMoney } from "@/utils/format";
+import { useExpenses } from "@/hooks/use-expenses";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -30,6 +30,7 @@ const PERIOD_LABELS: Record<Timeframe, string> = {
 };
 
 export default function AnalyticsScreen() {
+  const { formatAmount } = useExpenses();
   const {
     timeframe,
     setTimeframe,
@@ -69,7 +70,7 @@ export default function AnalyticsScreen() {
                 color="textPrimary"
                 style={{ fontSize: 32, marginTop: Spacing.sm }}
               >
-                {formatMoney(totalSpent)}
+                {formatAmount(totalSpent)}
               </ThemedText>
               <ThemedText
                 type="caption"

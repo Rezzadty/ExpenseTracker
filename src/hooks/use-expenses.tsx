@@ -1,6 +1,11 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { Category } from '@/constants/theme';
 import type { Expense } from '@/types/expense';
+import {
+  type CurrencyCode,
+  type SeparatorStyle,
+  formatMoney as formatMoneyUtil,
+} from '@/utils/format';
 
 const SEED: Expense[] = [
   { id: '1', amount: 45000, category: 'Food', note: 'Grocery run', date: '2026-08-19' },
@@ -20,6 +25,8 @@ let nextId = 11;
 function useExpensesStore() {
   const [expenses, setExpenses] = useState<Expense[]>(SEED);
   const [dailyBudget, setDailyBudget] = useState<number>(200000);
+  const [currency, setCurrency] = useState<CurrencyCode>('IDR');
+  const [separatorStyle, setSeparatorStyle] = useState<SeparatorStyle>('dot');
 
   const addExpense = useCallback((data: Omit<Expense, 'id'>) => {
     setExpenses((prev) => [{ ...data, id: String(nextId++) }, ...prev]);
@@ -27,6 +34,10 @@ function useExpensesStore() {
 
   const deleteExpense = useCallback((id: string) => {
     setExpenses((prev) => prev.filter((e) => e.id !== id));
+  }, []);
+
+  const clearAllExpenses = useCallback(() => {
+    setExpenses([]);
   }, []);
 
   const totalSpent = useMemo(() => expenses.reduce((s, e) => s + e.amount, 0), [expenses]);
@@ -45,12 +56,23 @@ function useExpensesStore() {
     return map;
   }, [expenses]);
 
+  const formatAmount = useCallback(
+    (amount: number) => formatMoneyUtil(amount, currency, separatorStyle),
+    [currency, separatorStyle],
+  );
+
   return {
     expenses,
     dailyBudget,
     setDailyBudget,
+    currency,
+    setCurrency,
+    separatorStyle,
+    setSeparatorStyle,
+    formatAmount,
     addExpense,
     deleteExpense,
+    clearAllExpenses,
     totalSpent,
     todaySpent,
     byCategory,

@@ -13,6 +13,8 @@ import {
   Spacing,
   type Category,
 } from "@/constants/theme";
+import { useExpenses } from "@/hooks/use-expenses";
+import { CURRENCY_OPTIONS } from "@/utils/format";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
@@ -32,6 +34,9 @@ export default function ModalAddExpense({
   onClose,
   onSave,
 }: ModalAddExpenseProps) {
+  const { currency } = useExpenses();
+  const symbol = CURRENCY_OPTIONS[currency]?.symbol || "Rp";
+
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [category, setCategory] = useState<Category>("Food");
@@ -78,7 +83,7 @@ export default function ModalAddExpense({
           color="textSecondary"
           style={{ marginBottom: Spacing.xs }}
         >
-          Amount (Rp)
+          {`Amount (${symbol})`}
         </ThemedText>
         <Input
           placeholder="e.g. 50000"

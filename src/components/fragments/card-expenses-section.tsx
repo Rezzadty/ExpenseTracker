@@ -14,8 +14,8 @@ import {
   Spacing,
   type Category,
 } from "@/constants/theme";
+import { useExpenses } from "@/hooks/use-expenses";
 import type { Expense } from "@/types/expense";
-import { formatMoney } from "@/utils/format";
 import { useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
@@ -39,6 +39,7 @@ export default function CardExpensesSection({
   expenses,
   onDelete,
 }: CardExpensesSectionProps) {
+  const { formatAmount } = useExpenses();
   const [filter, setFilter] = useState<"All" | Category>("All");
   const [search, setSearch] = useState("");
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -84,7 +85,7 @@ export default function CardExpensesSection({
             fontSize: 20,
           }}
         >
-          {formatMoney(total)}
+          {formatAmount(total)}
         </ThemedText>
       </ThemedView>
 
