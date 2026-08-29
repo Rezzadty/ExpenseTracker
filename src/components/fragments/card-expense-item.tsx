@@ -1,7 +1,7 @@
 // Fragment displaying single expense item row with category badge and optional delete action.
 import { ThemedText } from "@/components/elements";
 import {
-  CategoryColors,
+  DEFAULT_CATEGORY_COLORS,
   Fonts,
   Radius,
   Spacing,
@@ -19,20 +19,21 @@ export default function CardExpenseItem({
   item,
   onDelete,
 }: CardExpenseItemProps) {
-  const { formatAmount, colors } = useExpenses();
+  const { formatAmount, colors, categoryColorMap } = useExpenses();
+  const catColor = categoryColorMap[item.category] || DEFAULT_CATEGORY_COLORS[item.category] || colors.accent;
 
   return (
     <View style={[styles.expenseRow, { backgroundColor: colors.surface }]}>
       <View
         style={[
           styles.categoryBadge,
-          { backgroundColor: CategoryColors[item.category] + "20" },
+          { backgroundColor: catColor + "20" },
         ]}
       >
         <ThemedText
           type="caption"
           style={{
-            color: CategoryColors[item.category],
+            color: catColor,
             fontFamily: Fonts.sansSemiBold,
             fontWeight: "600",
           }}

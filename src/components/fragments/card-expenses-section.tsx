@@ -19,17 +19,6 @@ import type { Expense } from "@/types/expense";
 import { useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
-const CATEGORIES: ("All" | Category)[] = [
-  "All",
-  "Food",
-  "Transport",
-  "Shopping",
-  "Health",
-  "Bills",
-  "Fun",
-  "Other",
-];
-
 export type CardExpensesSectionProps = {
   expenses: Expense[];
   onDelete: (id: string) => void;
@@ -39,10 +28,12 @@ export default function CardExpensesSection({
   expenses,
   onDelete,
 }: CardExpensesSectionProps) {
-  const { formatAmount } = useExpenses();
+  const { formatAmount, categories } = useExpenses();
   const [filter, setFilter] = useState<"All" | Category>("All");
   const [search, setSearch] = useState("");
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+  const filterOptions = useMemo(() => ["All", ...categories.map((c) => c.name)], [categories]);
 
   const handleDeleteConfirm = () => {
     if (pendingDeleteId) {
@@ -97,7 +88,7 @@ export default function CardExpensesSection({
       />
 
       <View style={styles.chipRow}>
-        {CATEGORIES.map((c) => (
+        {filterOptions.map((c) => (
           <Chip
             key={c}
             label={c}

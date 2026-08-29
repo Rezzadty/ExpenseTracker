@@ -17,7 +17,10 @@ export function useDashboard() {
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [showBudget, setShowBudget] = useState(false);
 
-  const maxCategory = useMemo(() => Math.max(...Object.values(byCategory), 0), [byCategory]);
+  const maxCategory = useMemo(() => {
+    const values = Object.values(byCategory).filter((v): v is number => typeof v === 'number');
+    return values.length > 0 ? Math.max(...values) : 0;
+  }, [byCategory]);
   const filtered = useMemo(
     () => (filter === 'All' ? expenses : expenses.filter((e) => e.category === filter)),
     [expenses, filter],

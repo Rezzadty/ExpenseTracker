@@ -26,19 +26,8 @@ import { useExpenses } from "@/hooks/use-expenses";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const CATEGORIES: ("All" | Category)[] = [
-  "All",
-  "Food",
-  "Transport",
-  "Shopping",
-  "Health",
-  "Bills",
-  "Fun",
-  "Other",
-];
-
 export default function DashboardScreen() {
-  const { colors } = useExpenses();
+  const { colors, categories } = useExpenses();
   const {
     addExpense,
     todaySpent,
@@ -57,6 +46,8 @@ export default function DashboardScreen() {
     filtered,
     visible,
   } = useDashboard();
+
+  const filterOptions = ["All", ...categories.map((c) => c.name)];
 
   return (
     <ThemedView style={styles.container}>
@@ -134,7 +125,7 @@ export default function DashboardScreen() {
             </ThemedView>
 
             <View style={styles.chipRow}>
-              {CATEGORIES.map((c) => (
+              {filterOptions.map((c) => (
                 <Chip
                   key={c}
                   label={c}

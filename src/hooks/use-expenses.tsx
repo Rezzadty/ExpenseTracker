@@ -2,8 +2,11 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { useColorScheme } from 'react-native';
 import {
   type Category,
+  type CategoryItem,
   type ColorTheme,
   DarkColors,
+  DEFAULT_CATEGORIES,
+  DEFAULT_CATEGORY_COLORS,
   LightColors,
 } from '@/constants/theme';
 import type { Expense } from '@/types/expense';
@@ -46,6 +49,47 @@ function useExpensesStore() {
   const [themeMode, setThemeMode] = useState<ThemeMode>('dark');
   const [reminderEnabled, setReminderEnabled] = useState<boolean>(true);
   const [reminderTime, setReminderTime] = useState<string>('20:00');
+  const [categories, setCategories] = useState<CategoryItem[]>(DEFAULT_CATEGORIES);
+
+  const categoryColorMap = useMemo(() => {
+    const map: Record<string, string> = { ...DEFAULT_CATEGORY_COLORS };
+    for (const c of categories) {
+      map[c.name] = c.color;
+    }
+    return map;
+  }, [categories]);
+
+  const addCategory = useCallback((cat: Omit<CategoryItem, 'id'>) => {
+    const id = `cat-${Date.now()}`;
+    setCategories((prev) => [...prev, { ...cat, id }]);
+  }, []);
+
+  const updateCategory = useCallback((id: string, cat: Partial<Omit<CategoryItem, 'id'>>) => {
+    setCategories((prev) =>
+      prev.map((c) => {
+        if (c.id !== id) return c;
+        const oldName = c.name;
+        const newName = cat.name ?? c.name;
+        if (oldName !== newName) {
+          setExpenses((currExp) =>
+            currExp.map((e) => (e.category === oldName ? { ...e, category: newName } : e)),
+          );
+        }
+        return { ...c, ...cat };
+      }),
+    );
+  }, []);
+
+  const deleteCategory = useCallback((id: string) => {
+    setCategories((prev) => {
+      const target = prev.find((c) => c.id === id);
+      if (!target) return prev;
+      setExpenses((currExp) =>
+        currExp.map((e) => (e.category === target.name ? { ...e, category: 'Other' } : e)),
+      );
+      return prev.filter((c) => c.id !== id);
+    });
+  }, []);
 
   const isDark = useMemo(() => {
     if (themeMode === 'system') return systemColorScheme !== 'light';
@@ -143,6 +187,11 @@ function useExpensesStore() {
     totalSpent,
     todaySpent,
     byCategory,
+    categories,
+    categoryColorMap,
+    addCategory,
+    updateCategory,
+    deleteCategory,
   } as const;
 }
 

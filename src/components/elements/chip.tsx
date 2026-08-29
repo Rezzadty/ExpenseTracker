@@ -11,13 +11,14 @@ export type ChipProps = PressableProps & {
 
 export default function Chip({ label, selected = false, style, ...rest }: ChipProps) {
   const { colors } = useExpenses();
+
   return (
     <Pressable
       style={[
         styles.chip,
         selected
-          ? { backgroundColor: colors.accentSoft }
-          : { backgroundColor: "transparent", borderWidth: 1, borderColor: colors.border },
+          ? { backgroundColor: colors.accentSoft, borderColor: "transparent" }
+          : { backgroundColor: "transparent", borderWidth: 1.5, borderColor: colors.border },
         typeof style === "function" ? undefined : style,
       ]}
       {...rest}

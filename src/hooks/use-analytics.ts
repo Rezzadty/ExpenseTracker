@@ -51,10 +51,10 @@ export function useAnalytics() {
     );
   }, [byCategory, totalSpent]);
 
-  const maxCategory = useMemo(
-    () => Math.max(...Object.values(byCategory), 0),
-    [byCategory],
-  );
+  const maxCategory = useMemo(() => {
+    const values = Object.values(byCategory).filter((v): v is number => typeof v === 'number');
+    return values.length > 0 ? Math.max(...values) : 0;
+  }, [byCategory]);
 
   return {
     timeframe,

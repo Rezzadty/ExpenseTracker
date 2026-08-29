@@ -6,7 +6,6 @@ import {
   ThemedText,
 } from "@/components/elements";
 import {
-  CategoryColors,
   Fonts,
   Radius,
   Spacing,
@@ -33,12 +32,17 @@ export default function ModalAddExpense({
   onClose,
   onSave,
 }: ModalAddExpenseProps) {
-  const { currency, colors } = useExpenses();
+  const { currency, colors, categories } = useExpenses();
   const symbol = CURRENCY_OPTIONS[currency]?.symbol || "Rp";
 
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
-  const [category, setCategory] = useState<Category>("Food");
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+
+  const activeCategory =
+    (selectedCategory && categories.some((c) => c.name === selectedCategory)
+      ? selectedCategory
+      : categories[0]?.name) || "Food";
 
   const handleSave = () => {
     const raw = amount.replace(/,/g, '.');
@@ -46,13 +50,13 @@ export default function ModalAddExpense({
     if (isNaN(amt) || amt <= 0 || !note.trim()) return;
     onSave({
       amount: amt,
-      category,
+      category: activeCategory,
       note: note.trim(),
       date: new Date().toISOString().slice(0, 10),
     });
     setAmount("");
     setNote("");
-    setCategory("Food");
+    setSelectedCategory(null);
     onClose();
   };
 
@@ -115,12 +119,12 @@ export default function ModalAddExpense({
           Category
         </ThemedText>
         <View style={styles.chipRow}>
-          {(Object.keys(CategoryColors) as Category[]).map((c) => (
+          {categories.map((c) => (
             <Chip
-              key={c}
-              label={c}
-              selected={category === c}
-              onPress={() => setCategory(c)}
+              key={c.id}
+              label={c.name}
+              selected={activeCategory === c.name}
+              onPress={() => setSelectedCategory(c.name)}
             />
           ))}
         </View>

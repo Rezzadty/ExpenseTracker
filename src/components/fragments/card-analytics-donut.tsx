@@ -1,7 +1,7 @@
 // Fragment analytics donut chart and legend breakdown for category spending.
 import { ThemedText } from "@/components/elements";
 import {
-  CategoryColors,
+  DEFAULT_CATEGORY_COLORS,
   Fonts,
   Spacing,
   type Category,
@@ -25,9 +25,12 @@ export default function CardAnalyticsDonut({
   data,
   total,
 }: CardAnalyticsDonutProps) {
-  const { formatAmount, colors } = useExpenses();
+  const { formatAmount, colors, categoryColorMap } = useExpenses();
   const size = 200;
   const stroke = 20;
+
+  const getCatColor = (cat: string) =>
+    categoryColorMap[cat] || DEFAULT_CATEGORY_COLORS[cat] || colors.accent;
 
   const segments = useMemo(() => {
     return data.reduce<(DonutSlice & { startAngle: number })[]>((acc, slice) => {
@@ -54,32 +57,32 @@ export default function CardAnalyticsDonut({
             },
           ]}
         />
-        {segments.map((seg) => (
-          <View
-            key={seg.category}
-            style={[
-              StyleSheet.absoluteFill,
-              { transform: [{ rotate: `${seg.startAngle - 90}deg` }] },
-            ]}
-          >
+        {segments.map((seg) => {
+          const segColor = getCatColor(seg.category);
+          return (
             <View
-              style={{
-                width: size,
-                height: size,
-                borderRadius: size / 2,
-                borderWidth: stroke,
-                borderColor: "transparent",
-                borderTopColor: CategoryColors[seg.category],
-                borderRightColor:
-                  seg.pct > 25 ? CategoryColors[seg.category] : "transparent",
-                borderBottomColor:
-                  seg.pct > 50 ? CategoryColors[seg.category] : "transparent",
-                borderLeftColor:
-                  seg.pct > 75 ? CategoryColors[seg.category] : "transparent",
-              }}
-            />
-          </View>
-        ))}
+              key={seg.category}
+              style={[
+                StyleSheet.absoluteFill,
+                { transform: [{ rotate: `${seg.startAngle - 90}deg` }] },
+              ]}
+            >
+              <View
+                style={{
+                  width: size,
+                  height: size,
+                  borderRadius: size / 2,
+                  borderWidth: stroke,
+                  borderColor: "transparent",
+                  borderTopColor: segColor,
+                  borderRightColor: seg.pct > 25 ? segColor : "transparent",
+                  borderBottomColor: seg.pct > 50 ? segColor : "transparent",
+                  borderLeftColor: seg.pct > 75 ? segColor : "transparent",
+                }}
+              />
+            </View>
+          );
+        })}
         <View style={[StyleSheet.absoluteFill, styles.centerLabel]}>
           <ThemedText type="caption" color="textSecondary">
             Total
@@ -104,7 +107,7 @@ export default function CardAnalyticsDonut({
             <View
               style={[
                 styles.legendDot,
-                { backgroundColor: CategoryColors[slice.category] },
+                { backgroundColor: getCatColor(slice.category) },
               ]}
             />
             <ThemedText
