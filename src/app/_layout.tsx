@@ -1,5 +1,4 @@
-// Root layout — loads DM Sans fonts, holds splash screen until ready, provides dynamic theme and tabs.
-import { Fonts } from "@/constants/theme";
+// Root layout — loads fonts, holds splash screen, redirects based on auth state.
 import { ExpensesProvider, useExpenses } from "@/hooks/use-expenses";
 import {
   DMSans_400Regular,
@@ -8,114 +7,35 @@ import {
   DMSans_700Bold,
   useFonts,
 } from "@expo-google-fonts/dm-sans";
-import { Tabs } from "expo-router";
+import { Slot, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
-import { Image } from "react-native";
+import { useEffect, useState } from "react";
 
 SplashScreen.preventAutoHideAsync();
 
-const icons = {
-  dashboard: require("@/assets/icons/dasboard_icon.png"),
-  expenses: require("@/assets/icons/expense_icon.png"),
-  analytics: require("@/assets/icons/analytics_icon.png"),
-  settings: require("@/assets/icons/settings_icon.png"),
-};
+function RootContent() {
+  const { isDark } = useExpenses();
+  // ponytail: replace with onAuthStateChanged listener when Firebase is wired
+  const [isLoggedIn] = useState(false);
 
-function RootNavigator() {
-  const { colors, isDark } = useExpenses();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    const inAuth = segments[0] === "(auth)";
+
+    if (!isLoggedIn && !inAuth) {
+      router.replace("/(auth)/login");
+    } else if (isLoggedIn && inAuth) {
+      router.replace("/(tabs)/index");
+    }
+  }, [isLoggedIn, segments, router]);
 
   return (
     <>
       <StatusBar style={isDark ? "light" : "dark"} />
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarShowLabel: true,
-          tabBarPosition: "bottom",
-          tabBarLabelPosition: "below-icon",
-          tabBarStyle: {
-            backgroundColor: colors.surface,
-            borderTopWidth: 1,
-            borderTopColor: colors.border,
-            height: 70,
-            paddingTop: 8,
-            paddingBottom: 8,
-            elevation: 8,
-          },
-          animation: "fade",
-          tabBarActiveTintColor: colors.accent,
-          tabBarInactiveTintColor: colors.textMuted,
-          tabBarLabelStyle: {
-            fontFamily: Fonts.sans,
-            fontSize: 11,
-            marginTop: 2,
-          },
-          sceneStyle: { backgroundColor: colors.background },
-        }}
-      >
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: "Dashboard",
-            tabBarLabel: "Dashboard",
-            tabBarIcon: ({ color }) => (
-              <Image
-                source={icons.dashboard}
-                style={{ width: 20, height: 20 }}
-                tintColor={color}
-                resizeMode="contain"
-              />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="expenses"
-          options={{
-            title: "Expenses",
-            tabBarLabel: "Expenses",
-            tabBarIcon: ({ color }) => (
-              <Image
-                source={icons.expenses}
-                style={{ width: 20, height: 20 }}
-                tintColor={color}
-                resizeMode="contain"
-              />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="analytics"
-          options={{
-            title: "Analytics",
-            tabBarLabel: "Analytics",
-            tabBarIcon: ({ color }) => (
-              <Image
-                source={icons.analytics}
-                style={{ width: 20, height: 20 }}
-                tintColor={color}
-                resizeMode="contain"
-              />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="settings"
-          options={{
-            title: "Settings",
-            tabBarLabel: "Settings",
-            tabBarIcon: ({ color }) => (
-              <Image
-                source={icons.settings}
-                style={{ width: 20, height: 20 }}
-                tintColor={color}
-                resizeMode="contain"
-              />
-            ),
-          }}
-        />
-      </Tabs>
+      <Slot />
     </>
   );
 }
@@ -138,7 +58,7 @@ export default function RootLayout() {
 
   return (
     <ExpensesProvider>
-      <RootNavigator />
+      <RootContent />
     </ExpensesProvider>
   );
 }
