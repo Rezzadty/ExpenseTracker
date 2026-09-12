@@ -1,28 +1,84 @@
-// Login screen — email + password form (not yet connected to Firebase).
 import { Button, ThemedText, ThemedView } from "@/components/elements";
 import { Fonts, Radius, Spacing } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { auth } from "@/lib/firebase";
+import Constants from "expo-constants";
+import * as AuthSession from "expo-auth-session";
+import * as WebBrowser from "expo-web-browser";
 import {
+  GoogleAuthProvider,
+  signInWithCredential,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { useEffect, useState } from "react";
+import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   StyleSheet,
   TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function LoginScreen() {
-  const router = useRouter();
-  const { colors } = useExpenses();
+WebBrowser.maybeCompleteAuthSession();
 
+const WEB_CLIENT_ID =
+  Constants.expoConfig?.extra?.GOOGLE_WEB_CLIENT_ID ?? "";
+
+const discovery = {
+  authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+  tokenEndpoint: "https://oauth2.googleapis.com/token",
+  revocationEndpoint: "https://oauth2.googleapis.com/revoke",
+};
+
+export default function LoginScreen() {
+  const { colors } = useExpenses();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    // ponytail: replace with signInWithEmailAndPassword(auth, email, password) when Firebase is wired
-    router.replace("/(tabs)/index");
+  const redirectUri = AuthSession.makeRedirectUri();
+
+  const [request, response, promptAsync] = AuthSession.useAuthRequest(
+    {
+      clientId: WEB_CLIENT_ID,
+      scopes: ["openid", "profile", "email"],
+      redirectUri,
+      responseType: AuthSession.ResponseType.IdToken,
+      usePKCE: false,
+    },
+    discovery
+  );
+
+  useEffect(() => {
+    if (response?.type !== "success") return;
+    const { id_token } = response.params;
+    if (!id_token) {
+      Alert.alert("Google sign in failed", "No id_token returned. Check your Google OAuth client configuration.");
+      return;
+    }
+    const credential = GoogleAuthProvider.credential(id_token);
+    setLoading(true);
+    signInWithCredential(auth, credential)
+      .catch((e) => Alert.alert("Google sign in failed", e.message))
+      .finally(() => setLoading(false));
+  }, [response]);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please enter email and password.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (e: any) {
+      Alert.alert("Sign in failed", e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -34,12 +90,7 @@ export default function LoginScreen() {
         >
           <ThemedView
             surface="surface"
-            style={[
-              styles.card,
-              {
-                borderColor: colors.border,
-              },
-            ]}
+            style={[styles.card, { borderColor: colors.border }]}
           >
             <View style={styles.header}>
               <ThemedText
@@ -55,11 +106,7 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.form}>
-              <ThemedText
-                type="body"
-                color="textSecondary"
-                style={styles.label}
-              >
+              <ThemedText type="body" color="textSecondary" style={styles.label}>
                 Email
               </ThemedText>
               <TextInput
@@ -80,11 +127,7 @@ export default function LoginScreen() {
                 onChangeText={setEmail}
               />
 
-              <ThemedText
-                type="body"
-                color="textSecondary"
-                style={styles.label}
-              >
+              <ThemedText type="body" color="textSecondary" style={styles.label}>
                 Password
               </ThemedText>
               <TextInput
@@ -108,28 +151,38 @@ export default function LoginScreen() {
             <Button
               style={[styles.loginBtn, { backgroundColor: colors.accent }]}
               onPress={handleLogin}
+              disabled={loading}
             >
               <ThemedText
                 type="body"
                 color="textOnAccent"
-                style={{
-                  fontFamily: Fonts.sansSemiBold,
-                  fontWeight: "600",
-                  fontSize: 16,
-                }}
+                style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600", fontSize: 16 }}
               >
-                Sign In
+                {loading ? "Signing in..." : "Sign In"}
               </ThemedText>
             </Button>
 
-            <View style={styles.footer}>
-              <ThemedText type="caption" color="textMuted">
-                Don&apos;t have an account?{" "}
+            <View style={styles.divider}>
+              <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+              <ThemedText type="caption" color="textMuted" style={styles.dividerText}>
+                or
               </ThemedText>
-              <ThemedText type="caption" color="accent">
-                Sign Up
-              </ThemedText>
+              <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
             </View>
+
+            <Pressable
+              style={[styles.googleBtn, { borderColor: colors.border }]}
+              onPress={() => promptAsync()}
+              disabled={!request || loading}
+            >
+              <ThemedText
+                type="body"
+                color="textPrimary"
+                style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600", fontSize: 15 }}
+              >
+                Sign in with Google
+              </ThemedText>
+            </Pressable>
           </ThemedView>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -153,11 +206,9 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    marginBottom: Spacing.xxl,
+    marginBottom: Spacing.lg,
   },
-  form: {
-    marginBottom: Spacing.xl,
-  },
+  form: { marginBottom: Spacing.xl },
   label: {
     fontFamily: Fonts.sansSemiBold,
     fontWeight: "600",
@@ -178,9 +229,18 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md + 2,
     borderRadius: Radius.button,
   },
-  footer: {
+  divider: {
     flexDirection: "row",
+    alignItems: "center",
+    marginVertical: Spacing.lg,
+  },
+  dividerLine: { flex: 1, height: 1 },
+  dividerText: { marginHorizontal: Spacing.md },
+  googleBtn: {
+    alignItems: "center",
     justifyContent: "center",
-    marginTop: Spacing.lg,
+    paddingVertical: Spacing.md + 2,
+    borderRadius: Radius.button,
+    borderWidth: 1,
   },
 });

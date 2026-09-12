@@ -1,4 +1,5 @@
 // Root layout — loads fonts, holds splash screen, redirects based on auth state.
+import { auth } from "@/lib/firebase";
 import { ExpensesProvider, useExpenses } from "@/hooks/use-expenses";
 import {
   DMSans_400Regular,
@@ -7,6 +8,7 @@ import {
   DMSans_700Bold,
   useFonts,
 } from "@expo-google-fonts/dm-sans";
+import { onAuthStateChanged } from "firebase/auth";
 import { Slot, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -16,13 +18,20 @@ SplashScreen.preventAutoHideAsync();
 
 function RootContent() {
   const { isDark } = useExpenses();
-  // ponytail: replace with onAuthStateChanged listener when Firebase is wired
-  const [isLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setIsLoggedIn(!!user);
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    if (isLoggedIn === null) return;
     const inAuth = segments[0] === "(auth)";
 
     if (!isLoggedIn && !inAuth) {
@@ -31,6 +40,8 @@ function RootContent() {
       router.replace("/(tabs)/index");
     }
   }, [isLoggedIn, segments, router]);
+
+  if (isLoggedIn === null) return null;
 
   return (
     <>
