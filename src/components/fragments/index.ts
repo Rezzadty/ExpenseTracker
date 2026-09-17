@@ -42,6 +42,8 @@ export { default as CardSettingsCurrency } from "./card-settings-currency";
 export { default as CardSettingsAppearance } from "./card-settings-appearance";
 export { default as CardSettingsAbout } from "./card-settings-about";
 
+export { default as ModalConfirmLogout } from "./modal-confirm-logout";
+
 export { default as Navbar } from "./navbar";
 export type { NavbarProps } from "./navbar";
 
