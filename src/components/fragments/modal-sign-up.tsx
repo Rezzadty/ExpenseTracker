@@ -1,10 +1,8 @@
-import { Button, ThemedText, ThemedView } from "@/components/elements";
-import { ModalNotification, ModalSignUp } from "@/components/fragments";
+import { AnimatedModal, Button, ThemedText, ThemedView } from "@/components/elements";
 import { Fonts, Radius, Spacing } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
 import { auth } from "@/lib/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { useRouter } from "expo-router";
+import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -14,20 +12,25 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import ModalNotification from "./modal-notification";
 
-export default function LoginScreen() {
+export type ModalSignUpProps = {
+  visible: boolean;
+  onClose: () => void;
+};
+
+export default function ModalSignUp({ visible, onClose }: ModalSignUpProps) {
   const { colors } = useExpenses();
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showSignUp, setShowSignUp] = useState(false);
   const [notification, setNotification] = useState<{
     visible: boolean;
     type: "success" | "error" | "info";
     title: string;
     message: string;
+    buttonText?: string;
     onDismiss?: () => void;
   }>({
     visible: false,
@@ -36,45 +39,74 @@ export default function LoginScreen() {
     message: "",
   });
 
-  const handleLogin = async () => {
-    if (!email || !password) {
+  const resetForm = () => {
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  const handleSignUp = async () => {
+    if (!email || !password || !confirmPassword) {
       setNotification({
         visible: true,
         type: "error",
         title: "Missing Fields",
-        message: "Please enter both email and password.",
+        message: "Please fill in all fields.",
+      });
+      return;
+    }
+    if (password !== confirmPassword) {
+      setNotification({
+        visible: true,
+        type: "error",
+        title: "Password Mismatch",
+        message: "Passwords do not match. Please verify your password.",
+      });
+      return;
+    }
+    if (password.length < 6) {
+      setNotification({
+        visible: true,
+        type: "error",
+        title: "Weak Password",
+        message: "Password must be at least 6 characters long.",
       });
       return;
     }
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email.trim(), password);
+      await createUserWithEmailAndPassword(auth, email.trim(), password);
+      await signOut(auth);
       setNotification({
         visible: true,
         type: "success",
-        title: "Login Successful",
-        message: "Welcome back! You have successfully signed in.",
-        onDismiss: () => router.replace("/(tabs)"),
+        title: "Account Created",
+        message: "Your account has been created successfully! Please sign in with your credentials.",
+        buttonText: "Go to Sign In",
+        onDismiss: () => {
+          handleClose();
+        },
       });
     } catch (e: any) {
-      let message = "An error occurred during sign in.";
-      if (
-        e.code === "auth/invalid-credential" ||
-        e.code === "auth/wrong-password" ||
-        e.code === "auth/user-not-found"
-      ) {
-        message = "Incorrect email or password. Please check your credentials.";
+      let message = "An error occurred during sign up.";
+      if (e.code === "auth/email-already-in-use") {
+        message = "This email is already registered. Please sign in instead.";
       } else if (e.code === "auth/invalid-email") {
         message = "Please enter a valid email address.";
-      } else if (e.code === "auth/too-many-requests") {
-        message = "Too many failed attempts. Please try again later.";
+      } else if (e.code === "auth/weak-password") {
+        message = "Password is too weak. Please use a stronger password.";
       } else if (e.message) {
         message = e.message;
       }
       setNotification({
         visible: true,
         type: "error",
-        title: "Login Failed",
+        title: "Sign Up Failed",
         message,
       });
     } finally {
@@ -83,27 +115,30 @@ export default function LoginScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safe}>
-        <KeyboardAvoidingView
-          style={styles.inner}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
+    <>
+      <AnimatedModal visible={visible && !notification.visible} onClose={handleClose}>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
           <ThemedView
             surface="surface"
             style={[styles.card, { borderColor: colors.border }]}
           >
             <View style={styles.header}>
               <ThemedText
-                type="money"
-                color="accent"
-                style={{ fontSize: 36, marginBottom: Spacing.xs }}
+                type="body"
+                color="textPrimary"
+                style={{
+                  fontFamily: Fonts.sansBold,
+                  fontWeight: "700",
+                  fontSize: 18,
+                }}
               >
-                ExpenseTracker
+                Create Account
               </ThemedText>
-              <ThemedText type="body" color="textMuted">
-                Sign in to continue
-              </ThemedText>
+              <Pressable onPress={handleClose} hitSlop={12}>
+                <ThemedText type="body" color="textMuted" style={{ fontSize: 22 }}>
+                  ✕
+                </ThemedText>
+              </Pressable>
             </View>
 
             <View style={styles.form}>
@@ -147,11 +182,31 @@ export default function LoginScreen() {
                 value={password}
                 onChangeText={setPassword}
               />
+
+              <ThemedText type="body" color="textSecondary" style={styles.label}>
+                Confirm Password
+              </ThemedText>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.background,
+                    color: colors.textPrimary,
+                    borderColor: colors.border,
+                  },
+                ]}
+                placeholder="Re-enter your password"
+                placeholderTextColor={colors.textMuted}
+                secureTextEntry
+                textContentType="password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+              />
             </View>
 
             <Button
-              style={[styles.loginBtn, { backgroundColor: colors.accent }]}
-              onPress={handleLogin}
+              style={[styles.signupBtn, { backgroundColor: colors.accent }]}
+              onPress={handleSignUp}
               disabled={loading}
             >
               <ThemedText
@@ -159,54 +214,52 @@ export default function LoginScreen() {
                 color="textOnAccent"
                 style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600", fontSize: 16 }}
               >
-                {loading ? "Signing in..." : "Sign In"}
+                {loading ? "Creating..." : "Sign Up"}
               </ThemedText>
             </Button>
 
-            <Pressable style={styles.toggleBtn} onPress={() => setShowSignUp(true)}>
+            <Pressable style={styles.toggleBtn} onPress={handleClose}>
               <ThemedText type="body" color="textMuted">
-                Don&apos;t have an account?{" "}
-                <ThemedText type="body" color="accent" style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}>
-                  Sign Up
+                Already have an account?{" "}
+                <ThemedText
+                  type="body"
+                  color="accent"
+                  style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}
+                >
+                  Sign In
                 </ThemedText>
               </ThemedText>
             </Pressable>
           </ThemedView>
         </KeyboardAvoidingView>
-      </SafeAreaView>
-
-      <ModalSignUp visible={showSignUp} onClose={() => setShowSignUp(false)} />
+      </AnimatedModal>
 
       <ModalNotification
         visible={notification.visible}
         type={notification.type}
         title={notification.title}
         message={notification.message}
+        buttonText={notification.buttonText}
         onClose={() => {
           const dismiss = notification.onDismiss;
           setNotification((prev) => ({ ...prev, visible: false }));
           dismiss?.();
         }}
       />
-    </ThemedView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  safe: { flex: 1 },
-  inner: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: Spacing.base,
-  },
   card: {
     borderRadius: Radius.card,
     padding: Spacing.xl,
     borderWidth: 1,
-    boxShadow: "0px 8px 24px rgba(0,0,0,0.25)",
+    boxShadow: "0px 8px 24px rgba(0,0,0,0.35)",
   },
   header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: Spacing.lg,
   },
@@ -225,7 +278,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     borderWidth: 1,
   },
-  loginBtn: {
+  signupBtn: {
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: Spacing.md + 2,

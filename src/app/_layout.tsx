@@ -36,8 +36,6 @@ function RootContent() {
 
     if (!isLoggedIn && !inAuth) {
       router.replace("/(auth)/login");
-    } else if (isLoggedIn && inAuth) {
-      router.replace("/(tabs)/index");
     }
   }, [isLoggedIn, segments, router]);
 

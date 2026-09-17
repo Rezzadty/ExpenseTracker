@@ -20,27 +20,14 @@ import {
   type SeparatorStyle,
   formatMoney as formatMoneyUtil,
 } from '@/utils/format';
-
-const SEED: Expense[] = [
-  { id: '1', amount: 45000, category: 'Food', note: 'Grocery run', date: '2026-08-19' },
-  { id: '2', amount: 25000, category: 'Transport', note: 'Grab ride', date: '2026-08-19' },
-  { id: '3', amount: 150000, category: 'Shopping', note: 'New shirt', date: '2026-08-18' },
-  { id: '4', amount: 35000, category: 'Health', note: 'Pharmacy', date: '2026-08-18' },
-  { id: '5', amount: 500000, category: 'Bills', note: 'Electricity', date: '2026-08-17' },
-  { id: '6', amount: 75000, category: 'Fun', note: 'Movie night', date: '2026-08-17' },
-  { id: '7', amount: 60000, category: 'Food', note: 'Dinner out', date: '2026-08-16' },
-  { id: '8', amount: 30000, category: 'Transport', note: 'Fuel', date: '2026-08-16' },
-  { id: '9', amount: 200000, category: 'Shopping', note: 'Headphones', date: '2026-08-15' },
-  { id: '10', amount: 15000, category: 'Other', note: 'Parking fee', date: '2026-08-15' },
-];
-
-let nextId = 11;
+import { auth, db } from '@/lib/firebase';
+import { collection, addDoc, deleteDoc, doc, query, where, onSnapshot } from 'firebase/firestore';
 
 export type ThemeMode = 'system' | 'dark' | 'light';
 
 function useExpensesStore() {
   const systemColorScheme = useColorScheme();
-  const [expenses, setExpenses] = useState<Expense[]>(SEED);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [dailyBudget, setDailyBudget] = useState<number>(200000);
   const [currency, setCurrencyState] = useState<CurrencyCode>('IDR');
   const [separatorStyle, setSeparatorStyle] = useState<SeparatorStyle>('dot');
@@ -113,10 +100,26 @@ function useExpensesStore() {
     };
   }, []);
 
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (!user) return;
+    const q = query(collection(db, 'expenses'), where('userId', '==', user.uid));
+    const unsub = onSnapshot(q, (snapshot) => {
+      const exps: Expense[] = snapshot.docs.map((d) => ({
+        id: d.id,
+        amount: d.data().amount,
+        category: d.data().category,
+        note: d.data().note,
+        date: d.data().date,
+      }));
+      setExpenses(exps);
+    });
+    return unsub;
+  }, []);
+
   const setCurrency = useCallback(
     (newCurrency: CurrencyCode) => {
       if (newCurrency === currency) return;
-      // Convert all expenses and daily budget using current rates
       setExpenses((prev) =>
         prev.map((e) => ({
           ...e,
@@ -129,17 +132,26 @@ function useExpensesStore() {
     [currency, rates],
   );
 
-  const addExpense = useCallback((data: Omit<Expense, 'id'>) => {
-    setExpenses((prev) => [{ ...data, id: String(nextId++) }, ...prev]);
+  const addExpense = useCallback(async (data: Omit<Expense, 'id'>) => {
+    const user = auth.currentUser;
+    if (!user) return;
+    await addDoc(collection(db, 'expenses'), {
+      ...data,
+      userId: user.uid,
+    });
   }, []);
 
-  const deleteExpense = useCallback((id: string) => {
-    setExpenses((prev) => prev.filter((e) => e.id !== id));
+  const deleteExpense = useCallback(async (id: string) => {
+    await deleteDoc(doc(db, 'expenses', id));
   }, []);
 
-  const clearAllExpenses = useCallback(() => {
-    setExpenses([]);
-  }, []);
+  const clearAllExpenses = useCallback(async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+    for (const e of expenses) {
+      await deleteDoc(doc(db, 'expenses', e.id));
+    }
+  }, [expenses]);
 
   const totalSpent = useMemo(() => expenses.reduce((s, e) => s + e.amount, 0), [expenses]);
 
