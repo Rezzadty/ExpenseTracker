@@ -26,6 +26,9 @@ export type { ModalSetBudgetProps } from "./modal-set-budget";
 export { default as ModalConfirmDelete } from "./modal-confirm-delete";
 export type { ModalConfirmDeleteProps } from "./modal-confirm-delete";
 
+export { default as ModalNotification } from "./modal-notification";
+export type { ModalNotificationProps } from "./modal-notification";
+
 export { default as ModalEditCategory } from "./modal-edit-category";
 export type { ModalEditCategoryProps } from "./modal-edit-category";
 

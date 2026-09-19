@@ -20,27 +20,13 @@ import {
   type SeparatorStyle,
   formatMoney as formatMoneyUtil,
 } from '@/utils/format';
-
-const SEED: Expense[] = [
-  { id: '1', amount: 45000, category: 'Food', note: 'Grocery run', date: '2026-08-19' },
-  { id: '2', amount: 25000, category: 'Transport', note: 'Grab ride', date: '2026-08-19' },
-  { id: '3', amount: 150000, category: 'Shopping', note: 'New shirt', date: '2026-08-18' },
-  { id: '4', amount: 35000, category: 'Health', note: 'Pharmacy', date: '2026-08-18' },
-  { id: '5', amount: 500000, category: 'Bills', note: 'Electricity', date: '2026-08-17' },
-  { id: '6', amount: 75000, category: 'Fun', note: 'Movie night', date: '2026-08-17' },
-  { id: '7', amount: 60000, category: 'Food', note: 'Dinner out', date: '2026-08-16' },
-  { id: '8', amount: 30000, category: 'Transport', note: 'Fuel', date: '2026-08-16' },
-  { id: '9', amount: 200000, category: 'Shopping', note: 'Headphones', date: '2026-08-15' },
-  { id: '10', amount: 15000, category: 'Other', note: 'Parking fee', date: '2026-08-15' },
-];
-
-let nextId = 11;
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type ThemeMode = 'system' | 'dark' | 'light';
 
 function useExpensesStore() {
   const systemColorScheme = useColorScheme();
-  const [expenses, setExpenses] = useState<Expense[]>(SEED);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [dailyBudget, setDailyBudget] = useState<number>(200000);
   const [currency, setCurrencyState] = useState<CurrencyCode>('IDR');
   const [separatorStyle, setSeparatorStyle] = useState<SeparatorStyle>('dot');
@@ -113,10 +99,19 @@ function useExpensesStore() {
     };
   }, []);
 
+  useEffect(() => {
+    AsyncStorage.getItem('exp').then((raw) => {
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw) as Array<{ i: string; a: number; c: string; n: string; d: string }>;
+        setExpenses(parsed.map((e) => ({ id: e.i, amount: e.a, category: e.c, note: e.n, date: e.d })));
+      } catch {}
+    });
+  }, []);
+
   const setCurrency = useCallback(
     (newCurrency: CurrencyCode) => {
       if (newCurrency === currency) return;
-      // Convert all expenses and daily budget using current rates
       setExpenses((prev) =>
         prev.map((e) => ({
           ...e,
@@ -129,16 +124,31 @@ function useExpensesStore() {
     [currency, rates],
   );
 
-  const addExpense = useCallback((data: Omit<Expense, 'id'>) => {
-    setExpenses((prev) => [{ ...data, id: String(nextId++) }, ...prev]);
+  const persistExpenses = useCallback((exps: Expense[]) => {
+    const compact = exps.map((e) => ({ i: e.id, a: e.amount, c: e.category, n: e.note, d: e.date }));
+    AsyncStorage.setItem('exp', JSON.stringify(compact));
   }, []);
 
-  const deleteExpense = useCallback((id: string) => {
-    setExpenses((prev) => prev.filter((e) => e.id !== id));
-  }, []);
+  const addExpense = useCallback(async (data: Omit<Expense, 'id'>) => {
+    const id = `e-${Date.now()}`;
+    setExpenses((prev) => {
+      const next = [...prev, { id, ...data }];
+      persistExpenses(next);
+      return next;
+    });
+  }, [persistExpenses]);
 
-  const clearAllExpenses = useCallback(() => {
+  const deleteExpense = useCallback(async (id: string) => {
+    setExpenses((prev) => {
+      const next = prev.filter((e) => e.id !== id);
+      persistExpenses(next);
+      return next;
+    });
+  }, [persistExpenses]);
+
+  const clearAllExpenses = useCallback(async () => {
     setExpenses([]);
+    AsyncStorage.setItem('exp', '[]');
   }, []);
 
   const totalSpent = useMemo(() => expenses.reduce((s, e) => s + e.amount, 0), [expenses]);

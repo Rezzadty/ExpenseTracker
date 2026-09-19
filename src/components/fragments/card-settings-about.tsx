@@ -1,4 +1,3 @@
-// Fragment card for about and version info.
 import { Button, Card, ThemedText } from "@/components/elements";
 import { Fonts, Radius, Spacing } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
@@ -18,11 +17,7 @@ export default function CardSettingsAbout() {
         <ThemedText type="caption" color="textMuted">
           App Name
         </ThemedText>
-        <ThemedText
-          type="body"
-          color="textPrimary"
-          style={styles.infoValue}
-        >
+        <ThemedText type="body" color="textPrimary" style={styles.infoValue}>
           ExpenseTracker
         </ThemedText>
       </View>
@@ -31,11 +26,7 @@ export default function CardSettingsAbout() {
         <ThemedText type="caption" color="textMuted">
           Version
         </ThemedText>
-        <ThemedText
-          type="body"
-          color="textPrimary"
-          style={styles.infoValue}
-        >
+        <ThemedText type="body" color="textPrimary" style={styles.infoValue}>
           1.0.0 (Build 1)
         </ThemedText>
       </View>
@@ -44,11 +35,7 @@ export default function CardSettingsAbout() {
         <ThemedText type="caption" color="textMuted">
           Total Records
         </ThemedText>
-        <ThemedText
-          type="body"
-          color="textPrimary"
-          style={styles.infoValue}
-        >
+        <ThemedText type="body" color="textPrimary" style={styles.infoValue}>
           {expenses.length} transaction
           {expenses.length !== 1 ? "s" : ""}
         </ThemedText>
@@ -56,7 +43,9 @@ export default function CardSettingsAbout() {
 
       <View style={styles.buttonRow}>
         <Button
-          onPress={() => handleOpenLink("https://github.com")}
+          onPress={() =>
+            handleOpenLink("https://github.com/Rezzadty/ExpenseTracker")
+          }
           style={[styles.docButton, { borderColor: colors.accent }]}
         >
           <ThemedText
