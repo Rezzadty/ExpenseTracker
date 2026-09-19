@@ -1,28 +1,14 @@
-// Fragment card for about and version info.
 import { Button, Card, ThemedText } from "@/components/elements";
 import { Fonts, Radius, Spacing } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
-import { auth } from "@/lib/firebase";
 import * as Linking from "expo-linking";
-import { useRouter } from "expo-router";
-import { signOut } from "firebase/auth";
-import { useState } from "react";
 import { StyleSheet, View } from "react-native";
-import ModalConfirmLogout from "./modal-confirm-logout";
 
 export default function CardSettingsAbout() {
   const { expenses, colors } = useExpenses();
-  const router = useRouter();
-  const [showLogout, setShowLogout] = useState(false);
 
   const handleOpenLink = (url: string) => {
     Linking.openURL(url).catch(() => {});
-  };
-
-  const handleConfirmLogout = () => {
-    signOut(auth)
-      .then(() => router.replace("/(auth)/login"))
-      .catch(() => {});
   };
 
   return (
@@ -74,30 +60,6 @@ export default function CardSettingsAbout() {
           </ThemedText>
         </Button>
       </View>
-
-      <View style={styles.buttonRow}>
-        <Button
-          onPress={() => setShowLogout(true)}
-          style={[styles.docButton, { borderColor: colors.danger }]}
-        >
-          <ThemedText
-            type="body"
-            color="danger"
-            style={{
-              fontFamily: Fonts.sansSemiBold,
-              fontWeight: "600",
-            }}
-          >
-            Logout
-          </ThemedText>
-        </Button>
-      </View>
-
-      <ModalConfirmLogout
-        visible={showLogout}
-        onCancel={() => setShowLogout(false)}
-        onConfirm={handleConfirmLogout}
-      />
     </Card>
   );
 }

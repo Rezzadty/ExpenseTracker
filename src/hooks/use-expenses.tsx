@@ -20,8 +20,7 @@ import {
   type SeparatorStyle,
   formatMoney as formatMoneyUtil,
 } from '@/utils/format';
-import { auth, db } from '@/lib/firebase';
-import { collection, addDoc, deleteDoc, doc, query, where, onSnapshot } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type ThemeMode = 'system' | 'dark' | 'light';
 
@@ -101,20 +100,13 @@ function useExpensesStore() {
   }, []);
 
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) return;
-    const q = query(collection(db, 'expenses'), where('userId', '==', user.uid));
-    const unsub = onSnapshot(q, (snapshot) => {
-      const exps: Expense[] = snapshot.docs.map((d) => ({
-        id: d.id,
-        amount: d.data().amount,
-        category: d.data().category,
-        note: d.data().note,
-        date: d.data().date,
-      }));
-      setExpenses(exps);
+    AsyncStorage.getItem('exp').then((raw) => {
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw) as Array<{ i: string; a: number; c: string; n: string; d: string }>;
+        setExpenses(parsed.map((e) => ({ id: e.i, amount: e.a, category: e.c, note: e.n, date: e.d })));
+      } catch {}
     });
-    return unsub;
   }, []);
 
   const setCurrency = useCallback(
@@ -132,26 +124,32 @@ function useExpensesStore() {
     [currency, rates],
   );
 
-  const addExpense = useCallback(async (data: Omit<Expense, 'id'>) => {
-    const user = auth.currentUser;
-    if (!user) return;
-    await addDoc(collection(db, 'expenses'), {
-      ...data,
-      userId: user.uid,
-    });
+  const persistExpenses = useCallback((exps: Expense[]) => {
+    const compact = exps.map((e) => ({ i: e.id, a: e.amount, c: e.category, n: e.note, d: e.date }));
+    AsyncStorage.setItem('exp', JSON.stringify(compact));
   }, []);
+
+  const addExpense = useCallback(async (data: Omit<Expense, 'id'>) => {
+    const id = `e-${Date.now()}`;
+    setExpenses((prev) => {
+      const next = [...prev, { id, ...data }];
+      persistExpenses(next);
+      return next;
+    });
+  }, [persistExpenses]);
 
   const deleteExpense = useCallback(async (id: string) => {
-    await deleteDoc(doc(db, 'expenses', id));
-  }, []);
+    setExpenses((prev) => {
+      const next = prev.filter((e) => e.id !== id);
+      persistExpenses(next);
+      return next;
+    });
+  }, [persistExpenses]);
 
   const clearAllExpenses = useCallback(async () => {
-    const user = auth.currentUser;
-    if (!user) return;
-    for (const e of expenses) {
-      await deleteDoc(doc(db, 'expenses', e.id));
-    }
-  }, [expenses]);
+    setExpenses([]);
+    AsyncStorage.setItem('exp', '[]');
+  }, []);
 
   const totalSpent = useMemo(() => expenses.reduce((s, e) => s + e.amount, 0), [expenses]);
 

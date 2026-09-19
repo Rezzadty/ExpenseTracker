@@ -1,238 +1,38 @@
-import { Button, ThemedText, ThemedView } from "@/components/elements";
-import { ModalNotification, ModalSignUp } from "@/components/fragments";
-import { Fonts, Radius, Spacing } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
-import { auth } from "@/lib/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useEffect } from "react";
+import { Image, StyleSheet, View } from "react-native";
 
-export default function LoginScreen() {
+export default function SplashIntroScreen() {
   const { colors } = useExpenses();
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showSignUp, setShowSignUp] = useState(false);
-  const [notification, setNotification] = useState<{
-    visible: boolean;
-    type: "success" | "error" | "info";
-    title: string;
-    message: string;
-    onDismiss?: () => void;
-  }>({
-    visible: false,
-    type: "info",
-    title: "",
-    message: "",
-  });
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      setNotification({
-        visible: true,
-        type: "error",
-        title: "Missing Fields",
-        message: "Please enter both email and password.",
-      });
-      return;
-    }
-    setLoading(true);
-    try {
-      await signInWithEmailAndPassword(auth, email.trim(), password);
-      setNotification({
-        visible: true,
-        type: "success",
-        title: "Login Successful",
-        message: "Welcome back! You have successfully signed in.",
-        onDismiss: () => router.replace("/(tabs)"),
-      });
-    } catch (e: any) {
-      let message = "An error occurred during sign in.";
-      if (
-        e.code === "auth/invalid-credential" ||
-        e.code === "auth/wrong-password" ||
-        e.code === "auth/user-not-found"
-      ) {
-        message = "Incorrect email or password. Please check your credentials.";
-      } else if (e.code === "auth/invalid-email") {
-        message = "Please enter a valid email address.";
-      } else if (e.code === "auth/too-many-requests") {
-        message = "Too many failed attempts. Please try again later.";
-      } else if (e.message) {
-        message = e.message;
-      }
-      setNotification({
-        visible: true,
-        type: "error",
-        title: "Login Failed",
-        message,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      router.replace("/(tabs)");
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [router]);
 
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safe}>
-        <KeyboardAvoidingView
-          style={styles.inner}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <ThemedView
-            surface="surface"
-            style={[styles.card, { borderColor: colors.border }]}
-          >
-            <View style={styles.header}>
-              <ThemedText
-                type="money"
-                color="accent"
-                style={{ fontSize: 36, marginBottom: Spacing.xs }}
-              >
-                ExpenseTracker
-              </ThemedText>
-              <ThemedText type="body" color="textMuted">
-                Sign in to continue
-              </ThemedText>
-            </View>
-
-            <View style={styles.form}>
-              <ThemedText type="body" color="textSecondary" style={styles.label}>
-                Email
-              </ThemedText>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: colors.background,
-                    color: colors.textPrimary,
-                    borderColor: colors.border,
-                  },
-                ]}
-                placeholder="you@example.com"
-                placeholderTextColor={colors.textMuted}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                textContentType="emailAddress"
-                value={email}
-                onChangeText={setEmail}
-              />
-
-              <ThemedText type="body" color="textSecondary" style={styles.label}>
-                Password
-              </ThemedText>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: colors.background,
-                    color: colors.textPrimary,
-                    borderColor: colors.border,
-                  },
-                ]}
-                placeholder="Enter your password"
-                placeholderTextColor={colors.textMuted}
-                secureTextEntry
-                textContentType="password"
-                value={password}
-                onChangeText={setPassword}
-              />
-            </View>
-
-            <Button
-              style={[styles.loginBtn, { backgroundColor: colors.accent }]}
-              onPress={handleLogin}
-              disabled={loading}
-            >
-              <ThemedText
-                type="body"
-                color="textOnAccent"
-                style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600", fontSize: 16 }}
-              >
-                {loading ? "Signing in..." : "Sign In"}
-              </ThemedText>
-            </Button>
-
-            <Pressable style={styles.toggleBtn} onPress={() => setShowSignUp(true)}>
-              <ThemedText type="body" color="textMuted">
-                Don&apos;t have an account?{" "}
-                <ThemedText type="body" color="accent" style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}>
-                  Sign Up
-                </ThemedText>
-              </ThemedText>
-            </Pressable>
-          </ThemedView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-
-      <ModalSignUp visible={showSignUp} onClose={() => setShowSignUp(false)} />
-
-      <ModalNotification
-        visible={notification.visible}
-        type={notification.type}
-        title={notification.title}
-        message={notification.message}
-        onClose={() => {
-          const dismiss = notification.onDismiss;
-          setNotification((prev) => ({ ...prev, visible: false }));
-          dismiss?.();
-        }}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Image
+        source={require("../../../assets/images/icon.png")}
+        style={styles.logo}
+        resizeMode="contain"
       />
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  safe: { flex: 1 },
-  inner: {
+  container: {
     flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: Spacing.base,
-  },
-  card: {
-    borderRadius: Radius.card,
-    padding: Spacing.xl,
-    borderWidth: 1,
-    boxShadow: "0px 8px 24px rgba(0,0,0,0.25)",
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: Spacing.lg,
-  },
-  form: { marginBottom: Spacing.xl },
-  label: {
-    fontFamily: Fonts.sansSemiBold,
-    fontWeight: "600",
-    marginBottom: Spacing.xs,
-    marginTop: Spacing.base,
-  },
-  input: {
-    fontFamily: Fonts.sans,
-    fontSize: 15,
-    borderRadius: Radius.input,
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.md,
-    borderWidth: 1,
-  },
-  loginBtn: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: Spacing.md + 2,
-    borderRadius: Radius.button,
   },
-  toggleBtn: {
-    alignItems: "center",
-    marginTop: Spacing.lg,
+  logo: {
+    width: 160,
+    height: 160,
   },
 });

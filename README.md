@@ -25,6 +25,7 @@ A personal expense tracking mobile app to help you monitor daily spending, set b
 | Font       | [DM Sans](https://fonts.google.com/specimen/DM+Sans) via `@expo-google-fonts/dm-sans` |
 | Animations | React Native Reanimated                                                               |
 | Gestures   | React Native Gesture Handler                                                          |
+| Storage    | `@react-native-async-storage/async-storage` (local, persisted on device)             |
 | Linting    | ESLint with `eslint-config-expo`                                                      |
 
 ## Design System
@@ -84,4 +85,4 @@ src/
 
 ## Current Status
 
-**In development** — Core user flows (Dashboard, Expenses, Analytics, Settings, Category Customization, Multi-Currency, Theme Switching) are functional with shared React Context state. Remote database and cloud sync planned next.
+**In development** — Core user flows (Dashboard, Expenses, Analytics, Settings, Category Customization, Multi-Currency, Theme Switching) are fully functional. All expense data is stored locally on the device using AsyncStorage with compact serialization — no account or internet connection required. Data persists across app restarts and is tied to the device.

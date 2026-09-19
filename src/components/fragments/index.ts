@@ -26,9 +26,6 @@ export type { ModalSetBudgetProps } from "./modal-set-budget";
 export { default as ModalConfirmDelete } from "./modal-confirm-delete";
 export type { ModalConfirmDeleteProps } from "./modal-confirm-delete";
 
-export { default as ModalSignUp } from "./modal-sign-up";
-export type { ModalSignUpProps } from "./modal-sign-up";
-
 export { default as ModalNotification } from "./modal-notification";
 export type { ModalNotificationProps } from "./modal-notification";
 
@@ -41,8 +38,6 @@ export type { CardSettingsCategoriesProps } from "./card-settings-categories";
 export { default as CardSettingsCurrency } from "./card-settings-currency";
 export { default as CardSettingsAppearance } from "./card-settings-appearance";
 export { default as CardSettingsAbout } from "./card-settings-about";
-
-export { default as ModalConfirmLogout } from "./modal-confirm-logout";
 
 export { default as Navbar } from "./navbar";
 export type { NavbarProps } from "./navbar";
