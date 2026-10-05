@@ -6,32 +6,32 @@ export default {
     slug: "ExpenseTracker",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/images/icon.png",
+    icon: "./assets/icons/icon.png",
     scheme: "expensetracker",
     userInterfaceStyle: "automatic",
     ios: {
-      icon: "ExpenseTracker/assets/images/icon.png",
+      icon: "./assets/icons/icon.png",
     },
     android: {
       adaptiveIcon: {
-        backgroundColor: "#E6F4FE",
-        foregroundImage: "./assets/images/android-icon-foreground.png",
-        backgroundImage: "./assets/images/android-icon-background.png",
-        monochromeImage: "./assets/images/android-icon-monochrome.png",
+        backgroundColor: "#000000",
+        foregroundImage: "./assets/icons/icon.png",
+        backgroundImage: "./assets/icons/icon.png",
+        monochromeImage: "./assets/icons/icon.png",
       },
       predictiveBackGestureEnabled: false,
     },
     web: {
       output: "static",
-      favicon: "./assets/images/favicon.png",
+      favicon: "./assets/icons/icon.png",
     },
     plugins: [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          backgroundColor: "#208AEF",
-          image: "./assets/images/splash-icon.png",
+          backgroundColor: "#000000",
+          image: "./assets/icons/icon.png",
           imageWidth: 76,
         },
       ],
