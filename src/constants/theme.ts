@@ -94,22 +94,22 @@ export const Radius = {
   listRow: 12,
 } as const;
 
-// DM Sans font family references (loaded in _layout.tsx).
+// Google Sans Flex variable font (loaded in _layout.tsx).
 export const Fonts = Platform.select({
   ios: {
-    sans: "DMSans-Regular",
-    sansBold: "DMSans-Bold",
-    sansSemiBold: "DMSans-SemiBold",
+    sans: "GoogleSansFlex",
+    sansBold: "GoogleSansFlex",
+    sansSemiBold: "GoogleSansFlex",
   },
   android: {
-    sans: "DMSans-Regular",
-    sansBold: "DMSans-Bold",
-    sansSemiBold: "DMSans-SemiBold",
+    sans: "GoogleSansFlex",
+    sansBold: "GoogleSansFlex",
+    sansSemiBold: "GoogleSansFlex",
   },
   default: {
-    sans: "DMSans-Regular",
-    sansBold: "DMSans-Bold",
-    sansSemiBold: "DMSans-SemiBold",
+    sans: "GoogleSansFlex",
+    sansBold: "GoogleSansFlex",
+    sansSemiBold: "GoogleSansFlex",
   },
 })!;
 

@@ -22,7 +22,7 @@ export default function CardBalance({
   const barColor = isOverBudget ? colors.danger : colors.accent;
 
   return (
-    <Card style={styles.spendingCard}>
+    <Card style={styles.spendingCard} animated>
       <ThemedText type="sectionTitle" color="accent">
         {formatDate()}
       </ThemedText>

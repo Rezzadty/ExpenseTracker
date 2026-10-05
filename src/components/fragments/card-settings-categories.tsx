@@ -1,4 +1,3 @@
-// Fragment card for category customization list in settings.
 import {
   Button,
   Card,
@@ -6,7 +5,9 @@ import {
 } from "@/components/elements";
 import { Fonts, Radius, Spacing, type CategoryItem } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
+import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import ModalConfirmDelete from "./modal-confirm-delete";
 
 export type CardSettingsCategoriesProps = {
   onAdd: () => void;
@@ -18,6 +19,14 @@ export default function CardSettingsCategories({
   onEdit,
 }: CardSettingsCategoriesProps) {
   const { colors, categories, deleteCategory } = useExpenses();
+  const [deleteTarget, setDeleteTarget] = useState<CategoryItem | null>(null);
+
+  const handleDeleteConfirm = () => {
+    if (deleteTarget) {
+      deleteCategory(deleteTarget.id);
+      setDeleteTarget(null);
+    }
+  };
 
   return (
     <Card style={styles.card}>
@@ -92,7 +101,7 @@ export default function CardSettingsCategories({
             </Pressable>
             {categories.length > 1 && (
               <Pressable
-                onPress={() => deleteCategory(cat.id)}
+                onPress={() => setDeleteTarget(cat)}
                 style={[
                   styles.chipBtn,
                   { borderColor: colors.border, backgroundColor: "transparent" },
@@ -111,6 +120,14 @@ export default function CardSettingsCategories({
           </View>
         </View>
       ))}
+
+      <ModalConfirmDelete
+        visible={!!deleteTarget}
+        title="Delete Category"
+        message={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+      />
     </Card>
   );
 }

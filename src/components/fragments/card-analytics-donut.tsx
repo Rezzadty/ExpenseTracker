@@ -84,7 +84,7 @@ export default function CardAnalyticsDonut({
           );
         })}
         <View style={[StyleSheet.absoluteFill, styles.centerLabel]}>
-          <ThemedText type="caption" color="textSecondary">
+          <ThemedText type="caption" color="textSecondary" style={{ marginBottom: Spacing.xs }}>
             Total
           </ThemedText>
           <ThemedText
@@ -120,7 +120,7 @@ export default function CardAnalyticsDonut({
             <ThemedText
               type="caption"
               color="textPrimary"
-              style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}
+              style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600", minWidth: 40, textAlign: "right" }}
             >
               {slice.pct.toFixed(0)}%
             </ThemedText>
@@ -132,10 +132,10 @@ export default function CardAnalyticsDonut({
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: "center", gap: Spacing.lg },
+  container: { alignItems: "center", gap: Spacing.xl },
   ring: { position: "absolute" },
   centerLabel: { justifyContent: "center", alignItems: "center" },
-  legend: { width: "100%", gap: Spacing.sm },
-  legendItem: { flexDirection: "row", alignItems: "center", gap: Spacing.sm },
+  legend: { width: "100%", gap: Spacing.base },
+  legendItem: { flexDirection: "row", alignItems: "center", gap: Spacing.md },
   legendDot: { width: 10, height: 10, borderRadius: 5 },
 });

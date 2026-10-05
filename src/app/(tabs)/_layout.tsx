@@ -1,4 +1,4 @@
-// Tabs layout — bottom tab navigator for authenticated screens.
+// Tabs layout — bottom tab navigator for authenticated screens with smooth transitions.
 import { Fonts } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
 import { Tabs } from "expo-router";
@@ -30,7 +30,7 @@ function TabNavigator() {
           paddingBottom: 8,
           elevation: 8,
         },
-        animation: "fade",
+        animation: "shift",
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarLabelStyle: {

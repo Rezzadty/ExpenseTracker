@@ -1,4 +1,3 @@
-// Pure presentational button component with smooth spring press feedback and opacity transition.
 import type { PropsWithChildren } from "react";
 import { Pressable, type PressableProps } from "react-native";
 import Animated, {
@@ -35,16 +34,12 @@ export default function Button({
     <AnimatedPressable
       {...rest}
       onPressIn={(e) => {
-        // eslint-disable-next-line react-hooks/immutability
         scale.value = withSpring(0.95, SPRING_CONFIG);
-        // eslint-disable-next-line react-hooks/immutability
         opacity.value = withSpring(0.85, SPRING_CONFIG);
         onPressIn?.(e);
       }}
       onPressOut={(e) => {
-        // eslint-disable-next-line react-hooks/immutability
         scale.value = withSpring(1, SPRING_CONFIG);
-        // eslint-disable-next-line react-hooks/immutability
         opacity.value = withSpring(1, SPRING_CONFIG);
         onPressOut?.(e);
       }}

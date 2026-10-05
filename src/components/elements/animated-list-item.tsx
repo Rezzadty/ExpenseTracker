@@ -1,4 +1,3 @@
-// Pure presentational animated list item with smooth ease-out transitions without bounce.
 import type { PropsWithChildren } from "react";
 import Animated, {
   Easing,
