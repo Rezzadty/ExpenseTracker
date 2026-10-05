@@ -1,4 +1,3 @@
-// Pure presentational animated progress bar element for category percentages.
 "use no memo";
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";

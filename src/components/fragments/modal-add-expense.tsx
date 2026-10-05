@@ -1,6 +1,7 @@
-// Fragment modal dialog for adding new expense records with category selection.
+// Modal for adding new expense records with category selection.
 import {
   AnimatedModal,
+  Button,
   Chip,
   Input,
   ThemedText,
@@ -129,7 +130,7 @@ export default function ModalAddExpense({
           ))}
         </View>
 
-        <Pressable style={[styles.saveBtn, { backgroundColor: colors.accent }]} onPress={handleSave}>
+        <Button style={[styles.saveBtn, { backgroundColor: colors.accent }]} onPress={handleSave}>
           <ThemedText
             type="body"
             color="textOnAccent"
@@ -137,7 +138,7 @@ export default function ModalAddExpense({
           >
             Save Expense
           </ThemedText>
-        </Pressable>
+        </Button>
       </View>
     </AnimatedModal>
   );

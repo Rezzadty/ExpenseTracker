@@ -1,11 +1,5 @@
 import { ExpensesProvider, useExpenses } from "@/hooks/use-expenses";
-import {
-  DMSans_400Regular,
-  DMSans_500Medium,
-  DMSans_600SemiBold,
-  DMSans_700Bold,
-  useFonts,
-} from "@expo-google-fonts/dm-sans";
+import { useFonts } from "expo-font";
 import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -25,10 +19,7 @@ function RootContent() {
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    "DMSans-Regular": DMSans_400Regular,
-    "DMSans-Medium": DMSans_500Medium,
-    "DMSans-SemiBold": DMSans_600SemiBold,
-    "DMSans-Bold": DMSans_700Bold,
+    "GoogleSansFlex": require("../../assets/fonts/GoogleSansFlex-VariableFont_GRAD,ROND,opsz,slnt,wdth,wght.ttf"),
   });
 
   useEffect(() => {

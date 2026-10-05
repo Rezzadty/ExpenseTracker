@@ -1,5 +1,4 @@
-// Fragment modal dialog for confirming item deletion with dynamic theme styling.
-import { AnimatedModal, ThemedText } from "@/components/elements";
+import { AnimatedModal, Button, ThemedText } from "@/components/elements";
 import { Fonts, Radius, Spacing } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -46,7 +45,7 @@ export default function ModalConfirmDelete({
         </ThemedText>
 
         <View style={styles.actionRow}>
-          <Pressable style={styles.cancelBtn} onPress={onCancel}>
+          <Button style={styles.cancelBtn} onPress={onCancel}>
             <ThemedText
               type="body"
               color="textSecondary"
@@ -54,8 +53,8 @@ export default function ModalConfirmDelete({
             >
               Cancel
             </ThemedText>
-          </Pressable>
-          <Pressable style={[styles.deleteBtn, { backgroundColor: colors.danger }]} onPress={onConfirm}>
+          </Button>
+          <Button style={[styles.deleteBtn, { backgroundColor: colors.danger }]} onPress={onConfirm}>
             <ThemedText
               type="body"
               color="textOnAccent"
@@ -63,7 +62,7 @@ export default function ModalConfirmDelete({
             >
               Delete
             </ThemedText>
-          </Pressable>
+          </Button>
         </View>
       </View>
     </AnimatedModal>
@@ -85,14 +84,10 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
     borderRadius: Radius.button,
-    alignItems: "center",
-    justifyContent: "center",
   },
   deleteBtn: {
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.lg,
     borderRadius: Radius.button,
-    alignItems: "center",
-    justifyContent: "center",
   },
 });

@@ -1,4 +1,3 @@
-// Pure presentational themed container surface view.
 import { useExpenses } from "@/hooks/use-expenses";
 import { View, type ViewProps } from "react-native";
 

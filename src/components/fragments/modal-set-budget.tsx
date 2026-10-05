@@ -1,5 +1,5 @@
-// Fragment modal dialog for setting daily spending budget.
-import { AnimatedModal, Input, ThemedText } from "@/components/elements";
+// Modal for setting daily spending budget.
+import { AnimatedModal, Button, Input, ThemedText } from "@/components/elements";
 import { Fonts, Radius, Spacing } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
 import { CURRENCY_OPTIONS } from "@/utils/format";
@@ -74,7 +74,7 @@ export default function ModalSetBudget({
           style={{ marginBottom: Spacing.base }}
         />
 
-        <Pressable style={[styles.saveBtn, { backgroundColor: colors.accent }]} onPress={handleSave}>
+        <Button style={[styles.saveBtn, { backgroundColor: colors.accent }]} onPress={handleSave}>
           <ThemedText
             type="body"
             color="textOnAccent"
@@ -82,7 +82,7 @@ export default function ModalSetBudget({
           >
             Save Budget
           </ThemedText>
-        </Pressable>
+        </Button>
       </View>
     </AnimatedModal>
   );

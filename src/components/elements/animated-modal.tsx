@@ -1,9 +1,14 @@
-// Pure presentational animated modal backdrop and content wrapper.
 import { Spacing } from "@/constants/theme";
 import { BlurView } from "expo-blur";
 import type { PropsWithChildren } from "react";
 import { Modal, Pressable, StyleSheet, View } from "react-native";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  FadeIn,
+  FadeOut,
+  SlideInDown,
+  SlideOutDown,
+} from "react-native-reanimated";
 
 export type AnimatedModalProps = PropsWithChildren<{
   visible: boolean;
@@ -32,8 +37,8 @@ export default function AnimatedModal({
           <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         </Animated.View>
         <Animated.View
-          entering={FadeIn.duration(250)}
-          exiting={FadeOut.duration(150)}
+          entering={SlideInDown.duration(300).easing(Easing.out(Easing.cubic))}
+          exiting={SlideOutDown.duration(200).easing(Easing.in(Easing.cubic))}
           style={styles.content}
         >
           {children}
