@@ -1,6 +1,6 @@
-// Settings screen providing preferences, appearance & notifications, category customization, and about / version info.
 import {
   AnimatedScreen,
+  Button,
   ThemedText,
   ThemedView,
 } from "@/components/elements";
@@ -13,13 +13,17 @@ import {
   Navbar,
 } from "@/components/fragments";
 import { Spacing, type CategoryItem } from "@/constants/theme";
+import { useAuth } from "@/hooks/use-auth";
 import { useExpenses } from "@/hooks/use-expenses";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SettingsScreen() {
   const { addCategory, updateCategory } = useExpenses();
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [editingCat, setEditingCat] = useState<CategoryItem | null>(null);
 
@@ -39,6 +43,11 @@ export default function SettingsScreen() {
     } else {
       addCategory({ name, color });
     }
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace("/(auth)/login");
   };
 
   return (
@@ -88,6 +97,22 @@ export default function SettingsScreen() {
               About & Version
             </ThemedText>
             <CardSettingsAbout />
+
+            <ThemedText
+              type="sectionTitle"
+              color="textSecondary"
+              style={styles.sectionHeader}
+            >
+              Account
+            </ThemedText>
+            <ThemedText type="caption" color="textMuted" style={{ marginBottom: Spacing.sm }}>
+              Logged in as {user?.username}
+            </ThemedText>
+            <Button onPress={handleLogout} style={{ backgroundColor: "#ff4444" }}>
+              <ThemedText type="body" color="textOnAccent">
+                Logout
+              </ThemedText>
+            </Button>
           </ScrollView>
         </AnimatedScreen>
       </SafeAreaView>
