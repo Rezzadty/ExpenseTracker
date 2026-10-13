@@ -32,12 +32,17 @@ export type { ModalNotificationProps } from "./modal-notification";
 export { default as ModalEditCategory } from "./modal-edit-category";
 export type { ModalEditCategoryProps } from "./modal-edit-category";
 
+export { default as ModalLogout } from "./modal-logout";
+export type { ModalLogoutProps } from "./modal-logout";
+
 export { default as CardSettingsCategories } from "./card-settings-categories";
 export type { CardSettingsCategoriesProps } from "./card-settings-categories";
 
 export { default as CardSettingsCurrency } from "./card-settings-currency";
 export { default as CardSettingsAppearance } from "./card-settings-appearance";
 export { default as CardSettingsAbout } from "./card-settings-about";
+export { default as CardSettingsLogout } from "./card-settings-logout";
+export type { CardSettingsLogoutProps } from "./card-settings-logout";
 
 export { default as Navbar } from "./navbar";
 export type { NavbarProps } from "./navbar";

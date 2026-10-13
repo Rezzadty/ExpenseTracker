@@ -70,8 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data: allowed, error: allowedError } = await supabase
           .from("allowed_users")
           .select("username")
-          .eq("username", trimmed)
-          .single();
+          .ilike("username", trimmed)
+          .maybeSingle();
 
         if (allowedError || !allowed) {
           return { success: false, error: "Username not authorized" };
@@ -80,8 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         let { data: existingUser } = await supabase
           .from("users")
           .select("id, username")
-          .eq("username", trimmed)
-          .single();
+          .ilike("username", trimmed)
+          .maybeSingle();
 
         if (!existingUser) {
           const { data: newUser, error: createError } = await supabase

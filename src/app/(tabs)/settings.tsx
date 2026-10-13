@@ -1,6 +1,5 @@
 import {
   AnimatedScreen,
-  Button,
   ThemedText,
   ThemedView,
 } from "@/components/elements";
@@ -9,7 +8,9 @@ import {
   CardSettingsAppearance,
   CardSettingsCategories,
   CardSettingsCurrency,
+  CardSettingsLogout,
   ModalEditCategory,
+  ModalLogout,
   Navbar,
 } from "@/components/fragments";
 import { Spacing, type CategoryItem } from "@/constants/theme";
@@ -26,6 +27,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [editingCat, setEditingCat] = useState<CategoryItem | null>(null);
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
   const openAddCategory = () => {
     setEditingCat(null);
@@ -105,25 +107,28 @@ export default function SettingsScreen() {
             >
               Account
             </ThemedText>
-            <ThemedText type="caption" color="textMuted" style={{ marginBottom: Spacing.sm }}>
-              Logged in as {user?.username}
-            </ThemedText>
-            <Button onPress={handleLogout} style={{ backgroundColor: "#ff4444" }}>
-              <ThemedText type="body" color="textOnAccent">
-                Logout
-              </ThemedText>
-            </Button>
+            <CardSettingsLogout
+              username={user?.username}
+              onLogout={() => setLogoutModalVisible(true)}
+            />
           </ScrollView>
         </AnimatedScreen>
       </SafeAreaView>
 
-      <ModalEditCategory
-        visible={modalVisible}
-        editingItem={editingCat}
-        onClose={() => setModalVisible(false)}
-        onSave={handleSaveCategory}
-      />
-    </ThemedView>
+       <ModalEditCategory
+         visible={modalVisible}
+         editingItem={editingCat}
+         onClose={() => setModalVisible(false)}
+         onSave={handleSaveCategory}
+       />
+
+       <ModalLogout
+         visible={logoutModalVisible}
+         username={user?.username}
+         onCancel={() => setLogoutModalVisible(false)}
+         onConfirm={handleLogout}
+       />
+     </ThemedView>
   );
 }
 
