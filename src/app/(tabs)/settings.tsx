@@ -1,4 +1,3 @@
-// Settings screen providing preferences, appearance & notifications, category customization, and about / version info.
 import {
   AnimatedScreen,
   ThemedText,
@@ -9,19 +8,26 @@ import {
   CardSettingsAppearance,
   CardSettingsCategories,
   CardSettingsCurrency,
+  CardSettingsLogout,
   ModalEditCategory,
+  ModalLogout,
   Navbar,
 } from "@/components/fragments";
 import { Spacing, type CategoryItem } from "@/constants/theme";
+import { useAuth } from "@/hooks/use-auth";
 import { useExpenses } from "@/hooks/use-expenses";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SettingsScreen() {
   const { addCategory, updateCategory } = useExpenses();
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [editingCat, setEditingCat] = useState<CategoryItem | null>(null);
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
   const openAddCategory = () => {
     setEditingCat(null);
@@ -39,6 +45,11 @@ export default function SettingsScreen() {
     } else {
       addCategory({ name, color });
     }
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace("/(auth)/login");
   };
 
   return (
@@ -88,17 +99,36 @@ export default function SettingsScreen() {
               About & Version
             </ThemedText>
             <CardSettingsAbout />
+
+            <ThemedText
+              type="sectionTitle"
+              color="textSecondary"
+              style={styles.sectionHeader}
+            >
+              Account
+            </ThemedText>
+            <CardSettingsLogout
+              username={user?.username}
+              onLogout={() => setLogoutModalVisible(true)}
+            />
           </ScrollView>
         </AnimatedScreen>
       </SafeAreaView>
 
-      <ModalEditCategory
-        visible={modalVisible}
-        editingItem={editingCat}
-        onClose={() => setModalVisible(false)}
-        onSave={handleSaveCategory}
-      />
-    </ThemedView>
+       <ModalEditCategory
+         visible={modalVisible}
+         editingItem={editingCat}
+         onClose={() => setModalVisible(false)}
+         onSave={handleSaveCategory}
+       />
+
+       <ModalLogout
+         visible={logoutModalVisible}
+         username={user?.username}
+         onCancel={() => setLogoutModalVisible(false)}
+         onConfirm={handleLogout}
+       />
+     </ThemedView>
   );
 }
 

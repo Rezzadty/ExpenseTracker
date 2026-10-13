@@ -6,8 +6,8 @@ import Animated, {
   Easing,
   FadeIn,
   FadeOut,
-  SlideInDown,
-  SlideOutDown,
+  ZoomIn,
+  ZoomOut,
 } from "react-native-reanimated";
 
 export type AnimatedModalProps = PropsWithChildren<{
@@ -37,8 +37,8 @@ export default function AnimatedModal({
           <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         </Animated.View>
         <Animated.View
-          entering={SlideInDown.duration(300).easing(Easing.out(Easing.cubic))}
-          exiting={SlideOutDown.duration(200).easing(Easing.in(Easing.cubic))}
+          entering={ZoomIn.duration(250).easing(Easing.out(Easing.cubic))}
+          exiting={ZoomOut.duration(150).easing(Easing.in(Easing.cubic))}
           style={styles.content}
         >
           {children}

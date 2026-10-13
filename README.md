@@ -12,20 +12,22 @@ A personal expense tracking mobile app to help you monitor daily spending, set b
 - **Theme & Notifications**: Dark, Light, and System appearance modes with customizable daily reminder schedules.
 - **Expense History**: Category filtering, keyword search, and confirmation modal for deletions.
 - **Bottom Tab Navigation**: Quick navigation across Home, Expenses, Analytics, and Settings screens.
-- **Micro-interactions**: Fluid screen transitions, animated list items, and modal popups using React Native Reanimated.
+- **Admin-Gated Username Auth**: Supabase-backed authentication verifying authorized usernames against `allowed_users` whitelist.
+- **Micro-interactions**: Fluid screen transitions, animated list items, and centered zoom popups using React Native Reanimated.
 
 ## Tech Stack
 
 | Layer      | Technology                                                                            |
 | ---------- | ------------------------------------------------------------------------------------- |
 | Framework  | [Expo](https://expo.dev) (SDK 57)                                                     |
+| Backend/DB | [Supabase](https://supabase.com) (PostgreSQL)                                         |
 | Language   | TypeScript                                                                            |
 | Navigation | [Expo Router](https://docs.expo.dev/router/introduction/) (file-based routing)        |
 | UI         | React Native (0.86)                                                                   |
-| Font       | [DM Sans](https://fonts.google.com/specimen/DM+Sans) via `@expo-google-fonts/dm-sans` |
+| Font       | [Google Sans Flex](https://fonts.google.com)                                          |
 | Animations | React Native Reanimated                                                               |
 | Gestures   | React Native Gesture Handler                                                          |
-| Storage    | `@react-native-async-storage/async-storage` (local, persisted on device)             |
+| Storage    | `@react-native-async-storage/async-storage` (session cache & offline storage)          |
 | Linting    | ESLint with `eslint-config-expo`                                                      |
 
 ## Design System
@@ -51,6 +53,15 @@ src/
   services/            # External services and APIs (live exchange rates)
   types/               # TypeScript type definitions (expense, categories)
   utils/               # Formatting and currency utilities
+```
+
+## Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+EXPO_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 ```
 
 ## Getting Started
@@ -85,4 +96,11 @@ src/
 
 ## Current Status
 
-**In development** — Core user flows (Dashboard, Expenses, Analytics, Settings, Category Customization, Multi-Currency, Theme Switching) are fully functional. All expense data is stored locally on the device using AsyncStorage with compact serialization — no account or internet connection required. Data persists across app restarts and is tied to the device.
+**In development** — Core user flows (Dashboard, Expenses, Analytics, Settings, Category Customization, Multi-Currency, Theme Switching) are functional.
+
+### Recent Updates
+
+- **Supabase Backend Integration**: Switched authentication and data store foundation to Supabase (PostgreSQL) with SSR-safe client storage.
+- **Admin-Gated Login**: First-time login screens enforce username whitelisting via `allowed_users` database table with persistent session storage.
+- **Account Management**: Added session detection in root layout and user logout controls in Settings.
+- **Centered Modal Animations**: Replaced bottom slide modals with centered spring zoom animations (`ZoomIn` / `ZoomOut`) preserving blurred backdrops.
