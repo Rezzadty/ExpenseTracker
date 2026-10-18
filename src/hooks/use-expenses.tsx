@@ -61,13 +61,16 @@ function useExpensesStore() {
   // ponytail: direct supabase queries without offline sync queue; add offline sync when network-resilient storage needed
   useEffect(() => {
     let mounted = true;
-    if (!user) {
-      setExpenses([]);
-      setCategories(DEFAULT_CATEGORIES);
-      return;
-    }
 
     (async () => {
+      if (!user) {
+        if (mounted) {
+          setExpenses([]);
+          setCategories(DEFAULT_CATEGORIES);
+        }
+        return;
+      }
+
       const { data: catData } = await supabase
         .from("categories")
         .select("id, name, color")
@@ -293,6 +296,37 @@ function useExpensesStore() {
     [user],
   );
 
+  const updateExpense = useCallback(
+    async (id: string, data: Partial<Omit<Expense, "id">>) => {
+      if (!user) return;
+      const payload: Record<string, unknown> = {};
+      if (data.amount !== undefined) payload.amount = Math.round(data.amount);
+      if (data.category !== undefined) payload.category = data.category;
+      if (data.date !== undefined) payload.date = data.date;
+      if (data.note !== undefined) payload.note = data.note || null;
+
+      const { data: updated, error } = await supabase
+        .from("expenses")
+        .update(payload)
+        .eq("id", id)
+        .eq("user_id", user.id)
+        .select("id, amount, category, date, note")
+        .single();
+
+      if (error || !updated) return;
+
+      const item: Expense = {
+        id: updated.id,
+        amount: updated.amount,
+        category: updated.category,
+        note: updated.note ?? "",
+        date: updated.date,
+      };
+      setExpenses((prev) => prev.map((e) => (e.id === id ? item : e)));
+    },
+    [user],
+  );
+
   const clearAllExpenses = useCallback(async () => {
     if (!user) return;
     const { error } = await supabase
@@ -351,6 +385,7 @@ function useExpensesStore() {
     reminderTime,
     setReminderTime,
     addExpense,
+    updateExpense,
     deleteExpense,
     clearAllExpenses,
     totalSpent,

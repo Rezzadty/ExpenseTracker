@@ -8,6 +8,7 @@ import {
 } from "@/components/elements";
 import CardExpenseItem from "@/components/fragments/card-expense-item";
 import ModalConfirmDelete from "@/components/fragments/modal-confirm-delete";
+import ModalEditExpense from "@/components/fragments/modal-edit-expense";
 import {
   Fonts,
   Radius,
@@ -22,16 +23,19 @@ import { StyleSheet, View } from "react-native";
 export type CardExpensesSectionProps = {
   expenses: Expense[];
   onDelete: (id: string) => void;
+  onEdit?: (item: Expense) => void;
 };
 
 export default function CardExpensesSection({
   expenses,
   onDelete,
+  onEdit,
 }: CardExpensesSectionProps) {
-  const { formatAmount, categories } = useExpenses();
+  const { formatAmount, categories, updateExpense } = useExpenses();
   const [filter, setFilter] = useState<"All" | Category>("All");
   const [search, setSearch] = useState("");
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   const filterOptions = useMemo(() => ["All", ...categories.map((c) => c.name)], [categories]);
 
@@ -40,6 +44,22 @@ export default function CardExpensesSection({
       onDelete(pendingDeleteId);
       setPendingDeleteId(null);
     }
+  };
+
+  const handleEditSave = (data: {
+    id: string;
+    amount: number;
+    category: Category;
+    note: string;
+    date: string;
+  }) => {
+    updateExpense(data.id, {
+      amount: data.amount,
+      category: data.category,
+      note: data.note,
+      date: data.date,
+    });
+    setEditingExpense(null);
   };
 
   const filtered = useMemo(() => {
@@ -107,10 +127,21 @@ export default function CardExpensesSection({
       ) : (
         filtered.map((item, i) => (
           <AnimatedListItem key={item.id} index={i}>
-            <CardExpenseItem item={item} onDelete={(id) => setPendingDeleteId(id)} />
+            <CardExpenseItem
+              item={item}
+              onEdit={(target) => (onEdit ? onEdit(target) : setEditingExpense(target))}
+              onDelete={(id) => setPendingDeleteId(id)}
+            />
           </AnimatedListItem>
         ))
       )}
+
+      <ModalEditExpense
+        visible={editingExpense !== null}
+        expense={editingExpense}
+        onClose={() => setEditingExpense(null)}
+        onSave={handleEditSave}
+      />
 
       <ModalConfirmDelete
         visible={pendingDeleteId !== null}

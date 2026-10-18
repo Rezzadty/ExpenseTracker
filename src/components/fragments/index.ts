@@ -20,6 +20,9 @@ export type { CardExpensesSectionProps } from "./card-expenses-section";
 export { default as ModalAddExpense } from "./modal-add-expense";
 export type { ModalAddExpenseProps } from "./modal-add-expense";
 
+export { default as ModalEditExpense } from "./modal-edit-expense";
+export type { ModalEditExpenseProps } from "./modal-edit-expense";
+
 export { default as ModalSetBudget } from "./modal-set-budget";
 export type { ModalSetBudgetProps } from "./modal-set-budget";
 

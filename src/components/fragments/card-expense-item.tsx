@@ -13,11 +13,13 @@ import { Pressable, StyleSheet, View } from "react-native";
 export type CardExpenseItemProps = {
   item: Expense;
   onDelete?: (id: string) => void;
+  onEdit?: (item: Expense) => void;
 };
 
 export default function CardExpenseItem({
   item,
   onDelete,
+  onEdit,
 }: CardExpenseItemProps) {
   const { formatAmount, colors, categoryColorMap } = useExpenses();
   const catColor = categoryColorMap[item.category] || DEFAULT_CATEGORY_COLORS[item.category] || colors.accent;
@@ -54,13 +56,29 @@ export default function CardExpenseItem({
         >
           {formatAmount(item.amount)}
         </ThemedText>
-        {onDelete && (
-          <Pressable onPress={() => onDelete(item.id)} hitSlop={8}>
-            <ThemedText type="caption" color="danger">
-              Delete
-            </ThemedText>
-          </Pressable>
-        )}
+        <View style={styles.actions}>
+          {onEdit && (
+            <Pressable onPress={() => onEdit(item)} hitSlop={8}>
+              <ThemedText
+                type="caption"
+                style={{
+                  color: colors.edit,
+                  fontFamily: Fonts.sansSemiBold,
+                  fontWeight: "600",
+                }}
+              >
+                Edit
+              </ThemedText>
+            </Pressable>
+          )}
+          {onDelete && (
+            <Pressable onPress={() => onDelete(item.id)} hitSlop={8}>
+              <ThemedText type="caption" color="danger">
+                Delete
+              </ThemedText>
+            </Pressable>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -80,5 +98,10 @@ const styles = StyleSheet.create({
     borderRadius: Radius.listRow,
     alignItems: "center",
     justifyContent: "center",
+  },
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
   },
 });

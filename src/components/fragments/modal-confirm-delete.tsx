@@ -1,7 +1,7 @@
 import { AnimatedModal, Button, ThemedText } from "@/components/elements";
 import { Fonts, Radius, Spacing } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
-import { Pressable, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 export type ModalConfirmDeleteProps = {
   visible: boolean;

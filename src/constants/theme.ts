@@ -15,6 +15,7 @@ export interface ColorTheme {
   danger: string;
   warning: string;
   track: string;
+  edit: string;
 }
 
 export const DarkColors: ColorTheme = {
@@ -31,6 +32,7 @@ export const DarkColors: ColorTheme = {
   danger: "#FF6B6B",
   warning: "#FFC24D",
   track: "rgba(255,255,255,0.08)",
+  edit: "#4C85E6",
 };
 
 export const LightColors: ColorTheme = {
@@ -47,6 +49,7 @@ export const LightColors: ColorTheme = {
   danger: "#E54848",
   warning: "#D97706",
   track: "rgba(0,0,0,0.08)",
+  edit: "#1D4ED8",
 };
 
 // Default export is dark colors for backwards-compatibility

@@ -9,6 +9,7 @@ import {
 import { useExpenses } from "@/hooks/use-expenses";
 import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
+import Svg, { Circle } from "react-native-svg";
 
 export type DonutSlice = {
   category: Category;
@@ -28,63 +29,69 @@ export default function CardAnalyticsDonut({
   const { formatAmount, colors, categoryColorMap } = useExpenses();
   const size = 200;
   const stroke = 20;
+  const center = size / 2;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
 
   const getCatColor = (cat: string) =>
     categoryColorMap[cat] || DEFAULT_CATEGORY_COLORS[cat] || colors.accent;
 
   const segments = useMemo(() => {
-    return data.reduce<(DonutSlice & { startAngle: number })[]>((acc, slice) => {
+    return data.reduce<
+      (DonutSlice & { strokeLength: number; offset: number })[]
+    >((acc, slice) => {
       const prevEnd =
         acc.length > 0
-          ? acc[acc.length - 1].startAngle + acc[acc.length - 1].pct * 3.6
+          ? acc[acc.length - 1].offset + acc[acc.length - 1].strokeLength
           : 0;
-      return [...acc, { ...slice, startAngle: prevEnd }];
+      const strokeLength =
+        total > 0 ? (slice.amount / total) * circumference : 0;
+      return [...acc, { ...slice, strokeLength, offset: prevEnd }];
     }, []);
-  }, [data]);
+  }, [data, circumference, total]);
 
   return (
     <View style={styles.container}>
       <View style={{ width: size, height: size }}>
         <View
-          style={[
-            styles.ring,
-            {
-              width: size,
-              height: size,
-              borderRadius: size / 2,
-              borderWidth: stroke,
-              borderColor: colors.track,
-            },
-          ]}
-        />
-        {segments.map((seg) => {
-          const segColor = getCatColor(seg.category);
-          return (
-            <View
-              key={seg.category}
-              style={[
-                StyleSheet.absoluteFill,
-                { transform: [{ rotate: `${seg.startAngle - 90}deg` }] },
-              ]}
-            >
-              <View
-                style={{
-                  width: size,
-                  height: size,
-                  borderRadius: size / 2,
-                  borderWidth: stroke,
-                  borderColor: "transparent",
-                  borderTopColor: segColor,
-                  borderRightColor: seg.pct > 25 ? segColor : "transparent",
-                  borderBottomColor: seg.pct > 50 ? segColor : "transparent",
-                  borderLeftColor: seg.pct > 75 ? segColor : "transparent",
-                }}
+          style={{
+            width: size,
+            height: size,
+            transform: [{ rotate: "-90deg" }],
+          }}
+        >
+          <Svg width={size} height={size}>
+            <Circle
+              cx={center}
+              cy={center}
+              r={radius}
+              stroke={colors.track}
+              strokeWidth={stroke}
+              fill="none"
+            />
+            {segments.map((seg) => (
+              <Circle
+                key={seg.category}
+                cx={center}
+                cy={center}
+                r={radius}
+                stroke={getCatColor(seg.category)}
+                strokeWidth={stroke}
+                strokeDasharray={`${seg.strokeLength} ${circumference}`}
+                strokeDashoffset={-seg.offset}
+                strokeLinecap="butt"
+                fill="none"
               />
-            </View>
-          );
-        })}
+            ))}
+          </Svg>
+        </View>
+
         <View style={[StyleSheet.absoluteFill, styles.centerLabel]}>
-          <ThemedText type="caption" color="textSecondary" style={{ marginBottom: Spacing.xs }}>
+          <ThemedText
+            type="caption"
+            color="textSecondary"
+            style={{ marginBottom: Spacing.xs }}
+          >
             Total
           </ThemedText>
           <ThemedText
@@ -120,7 +127,12 @@ export default function CardAnalyticsDonut({
             <ThemedText
               type="caption"
               color="textPrimary"
-              style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600", minWidth: 40, textAlign: "right" }}
+              style={{
+                fontFamily: Fonts.sansSemiBold,
+                fontWeight: "600",
+                minWidth: 40,
+                textAlign: "right",
+              }}
             >
               {slice.pct.toFixed(0)}%
             </ThemedText>
@@ -133,7 +145,6 @@ export default function CardAnalyticsDonut({
 
 const styles = StyleSheet.create({
   container: { alignItems: "center", gap: Spacing.xl },
-  ring: { position: "absolute" },
   centerLabel: { justifyContent: "center", alignItems: "center" },
   legend: { width: "100%", gap: Spacing.base },
   legendItem: { flexDirection: "row", alignItems: "center", gap: Spacing.md },

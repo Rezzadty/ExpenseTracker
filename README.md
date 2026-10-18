@@ -4,10 +4,10 @@ A personal expense tracking mobile app to help you monitor daily spending, set b
 
 ## Features
 
-- **Daily Expense Tracking**: Add, browse, and delete expenses with amount, category, note, and date.
+- **Daily Expense Tracking**: Add, browse, edit, and delete expenses with amount, category, note, and date, supported by real-time Supabase sync.
 - **Budget Management**: Set and track daily spending limits with progress status.
 - **Category Customization**: Add, edit, or remove custom expense categories and choose color accents.
-- **Analytics & Trends**: Timeframe filters (Day, Week, Month), category breakdowns, custom donut chart, and trend comparisons.
+- **Analytics & Trends**: Timeframe filters (Day, Week, Month), category breakdowns, precise SVG donut chart, and trend comparisons.
 - **Currency & Locale**: Multi-currency conversion (IDR, USD, EUR, GBP, JPY) with live API rates and customizable number separators.
 - **Theme & Notifications**: Dark, Light, and System appearance modes with customizable daily reminder schedules.
 - **Expense History**: Category filtering, keyword search, and confirmation modal for deletions.
@@ -27,6 +27,7 @@ A personal expense tracking mobile app to help you monitor daily spending, set b
 | Font       | [Google Sans Flex](https://fonts.google.com)                                          |
 | Animations | React Native Reanimated                                                               |
 | Gestures   | React Native Gesture Handler                                                          |
+| Vector/SVG | `react-native-svg` (accurate multi-segment donut analytics)                           |
 | Storage    | `@react-native-async-storage/async-storage` (session cache & offline storage)          |
 | Linting    | ESLint with `eslint-config-expo`                                                      |
 
@@ -100,6 +101,9 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 
 ### Recent Updates
 
+- **SVG Donut Breakdown**: Replaced legacy CSS border rings with `react-native-svg` stroke-dash calculations for accurate multi-slice proportional rendering across all timeframes.
+- **Expense Editing & Dedicated Modal**: Added an Edit button alongside Delete styled with theme-adaptive blue (`#4C85E6` dark / `#1D4ED8` light) opening a centered popup with category chips and balanced 50/50 action buttons.
+- **Supabase Real-Time Updates**: Integrated `updateExpense` with direct PostgreSQL updates maintaining seamless client and server cache parity.
 - **Supabase Backend Integration**: Switched authentication and data store foundation to Supabase (PostgreSQL) with SSR-safe client storage.
 - **Admin-Gated Login**: First-time login screens enforce username whitelisting via `allowed_users` database table with persistent session storage.
 - **Account Management**: Added session detection in root layout and user logout controls in Settings.
