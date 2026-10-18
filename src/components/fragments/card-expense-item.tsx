@@ -22,15 +22,16 @@ export default function CardExpenseItem({
   onEdit,
 }: CardExpenseItemProps) {
   const { formatAmount, colors, categoryColorMap } = useExpenses();
-  const catColor = categoryColorMap[item.category] || DEFAULT_CATEGORY_COLORS[item.category] || colors.accent;
+  const catColor =
+    categoryColorMap[item.category] ||
+    DEFAULT_CATEGORY_COLORS[item.category] ||
+    colors.accent;
+  const hasActions = Boolean(onEdit || onDelete);
 
   return (
     <View style={[styles.expenseRow, { backgroundColor: colors.surface }]}>
       <View
-        style={[
-          styles.categoryBadge,
-          { backgroundColor: catColor + "20" },
-        ]}
+        style={[styles.categoryBadge, { backgroundColor: catColor + "20" }]}
       >
         <ThemedText
           type="caption"
@@ -49,36 +50,76 @@ export default function CardExpenseItem({
           {item.date}
         </ThemedText>
       </View>
-      <View style={{ alignItems: "flex-end", gap: Spacing.xs }}>
+      <View
+        style={[
+          styles.rightCol,
+          { alignItems: hasActions ? "center" : "flex-end" },
+        ]}
+      >
         <ThemedText
           type="body"
-          style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}
+          style={{
+            fontFamily: Fonts.sansSemiBold,
+            fontWeight: "600",
+            textAlign: hasActions ? "center" : "right",
+          }}
         >
           {formatAmount(item.amount)}
         </ThemedText>
-        <View style={styles.actions}>
-          {onEdit && (
-            <Pressable onPress={() => onEdit(item)} hitSlop={8}>
-              <ThemedText
-                type="caption"
-                style={{
-                  color: colors.edit,
-                  fontFamily: Fonts.sansSemiBold,
-                  fontWeight: "600",
-                }}
+        {hasActions && (
+          <View style={styles.actions}>
+            {onEdit && (
+              <Pressable
+                onPress={() => onEdit(item)}
+                hitSlop={6}
+                style={({ pressed }) => [
+                  styles.actionBtn,
+                  {
+                    backgroundColor: colors.edit + (pressed ? "28" : "14"),
+                    borderColor: colors.edit + "40",
+                  },
+                ]}
               >
-                Edit
-              </ThemedText>
-            </Pressable>
-          )}
-          {onDelete && (
-            <Pressable onPress={() => onDelete(item.id)} hitSlop={8}>
-              <ThemedText type="caption" color="danger">
-                Delete
-              </ThemedText>
-            </Pressable>
-          )}
-        </View>
+                <ThemedText
+                  type="caption"
+                  style={{
+                    color: colors.edit,
+                    fontFamily: Fonts.sansSemiBold,
+                    fontWeight: "600",
+                    fontSize: 10,
+                  }}
+                >
+                  Edit
+                </ThemedText>
+              </Pressable>
+            )}
+            {onDelete && (
+              <Pressable
+                onPress={() => onDelete(item.id)}
+                hitSlop={6}
+                style={({ pressed }) => [
+                  styles.actionBtn,
+                  {
+                    backgroundColor: colors.danger + (pressed ? "28" : "14"),
+                    borderColor: colors.danger + "40",
+                  },
+                ]}
+              >
+                <ThemedText
+                  type="caption"
+                  style={{
+                    color: colors.danger,
+                    fontFamily: Fonts.sansSemiBold,
+                    fontWeight: "600",
+                    fontSize: 10,
+                  }}
+                >
+                  Delete
+                </ThemedText>
+              </Pressable>
+            )}
+          </View>
+        )}
       </View>
     </View>
   );
@@ -99,9 +140,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  rightCol: {
+    justifyContent: "center",
+    gap: 3,
+  },
   actions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.md,
+    gap: 6,
+  },
+  actionBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: Radius.chip,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

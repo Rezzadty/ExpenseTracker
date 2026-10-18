@@ -1,8 +1,10 @@
 // Fragment card for appearance and notification settings.
 import { Card, Chip, ThemedText } from "@/components/elements";
+import ModalCustomReminder from "@/components/fragments/modal-custom-reminder";
 import { Fonts, Radius, Spacing } from "@/constants/theme";
 import { useExpenses, type ThemeMode } from "@/hooks/use-expenses";
-import { StyleSheet, Switch, View } from "react-native";
+import { useMemo, useState } from "react";
+import { Pressable, StyleSheet, Switch, View } from "react-native";
 
 const THEMES: { label: string; value: ThemeMode }[] = [
   { label: "Dark", value: "dark" },
@@ -10,7 +12,7 @@ const THEMES: { label: string; value: ThemeMode }[] = [
   { label: "System", value: "system" },
 ];
 
-const REMINDER_TIMES = ["19:00", "20:00", "21:00", "22:00"];
+const DEFAULT_REMINDER_TIMES = ["19:00", "20:00", "21:00", "22:00"];
 
 export default function CardSettingsAppearance() {
   const {
@@ -22,6 +24,25 @@ export default function CardSettingsAppearance() {
     reminderTime,
     setReminderTime,
   } = useExpenses();
+
+  const [showCustomModal, setShowCustomModal] = useState(false);
+  const [customTimes, setCustomTimes] = useState<string[]>(() =>
+    DEFAULT_REMINDER_TIMES.includes(reminderTime) ? [] : [reminderTime],
+  );
+
+  const allReminderTimes = useMemo(() => {
+    const list = [...DEFAULT_REMINDER_TIMES];
+    for (const t of customTimes) {
+      if (!list.includes(t)) list.push(t);
+    }
+    if (!list.includes(reminderTime)) list.push(reminderTime);
+    return list;
+  }, [customTimes, reminderTime]);
+
+  const handleSaveCustomTime = (newTime: string) => {
+    setReminderTime(newTime);
+    setCustomTimes((prev) => (prev.includes(newTime) ? prev : [...prev, newTime]));
+  };
 
   return (
     <Card style={styles.card}>
@@ -74,7 +95,7 @@ export default function CardSettingsAppearance() {
             Reminder Schedule Time
           </ThemedText>
           <View style={styles.chipRow}>
-            {REMINDER_TIMES.map((time) => (
+            {allReminderTimes.map((time) => (
               <Chip
                 key={time}
                 label={time}
@@ -82,9 +103,37 @@ export default function CardSettingsAppearance() {
                 onPress={() => setReminderTime(time)}
               />
             ))}
+            <Pressable
+              style={({ pressed }) => [
+                styles.customChip,
+                {
+                  borderColor: colors.border,
+                  backgroundColor: pressed ? colors.accentSoft : colors.surfaceRaised,
+                },
+              ]}
+              onPress={() => setShowCustomModal(true)}
+            >
+              <ThemedText
+                type="caption"
+                color="accent"
+                style={{
+                  fontFamily: Fonts.sansSemiBold,
+                  fontWeight: "600",
+                }}
+              >
+                + Custom
+              </ThemedText>
+            </Pressable>
           </View>
         </View>
       )}
+
+      <ModalCustomReminder
+        visible={showCustomModal}
+        initialTime={reminderTime}
+        onClose={() => setShowCustomModal(false)}
+        onSave={handleSaveCustomTime}
+      />
     </Card>
   );
 }
@@ -100,6 +149,15 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: Spacing.sm,
     marginBottom: Spacing.xs,
+    alignItems: "center",
+  },
+  customChip: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.chip,
+    borderWidth: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
   },
   infoRow: {
     flexDirection: "row",

@@ -62,7 +62,9 @@ export default function CardAnalyticsTrend({
 }: CardAnalyticsTrendProps) {
   const { colors } = useExpenses();
   const data =
-    timeframe === "monthly" ? getMonthlyTrend(expenses) : getDailyTrend(expenses);
+    timeframe === "monthly"
+      ? getMonthlyTrend(expenses)
+      : getDailyTrend(expenses);
   const max = Math.max(...data.map((d) => d.amount), 1);
 
   return (
@@ -72,11 +74,16 @@ export default function CardAnalyticsTrend({
           const heightPct = (item.amount / max) * 100;
           return (
             <View key={i} style={styles.barCol}>
-              <View style={[styles.barTrack, { backgroundColor: colors.track }]}>
+              <View
+                style={[styles.barTrack, { backgroundColor: colors.track }]}
+              >
                 <View
                   style={[
                     styles.barFill,
-                    { height: `${Math.max(heightPct, 2)}%`, backgroundColor: colors.accent },
+                    {
+                      height: `${Math.max(heightPct, 2)}%`,
+                      backgroundColor: colors.accent,
+                    },
                   ]}
                 />
               </View>

@@ -38,6 +38,9 @@ export type { ModalEditCategoryProps } from "./modal-edit-category";
 export { default as ModalLogout } from "./modal-logout";
 export type { ModalLogoutProps } from "./modal-logout";
 
+export { default as ModalCustomReminder } from "./modal-custom-reminder";
+export type { ModalCustomReminderProps } from "./modal-custom-reminder";
+
 export { default as CardSettingsCategories } from "./card-settings-categories";
 export type { CardSettingsCategoriesProps } from "./card-settings-categories";
 
