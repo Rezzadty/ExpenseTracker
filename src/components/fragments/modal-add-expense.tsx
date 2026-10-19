@@ -14,8 +14,9 @@ import {
 } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
 import { CURRENCY_OPTIONS } from "@/utils/format";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Platform, Pressable, StyleSheet, View } from "react-native";
 
 export type ModalAddExpenseProps = {
   visible: boolean;
@@ -39,11 +40,20 @@ export default function ModalAddExpense({
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const activeCategory =
     (selectedCategory && categories.some((c) => c.name === selectedCategory)
       ? selectedCategory
       : categories[0]?.name) || "Food";
+
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === "ios");
+    if (selectedDate) {
+      setDate(selectedDate);
+    }
+  };
 
   const handleSave = () => {
     const raw = amount.replace(/,/g, '.');
@@ -53,11 +63,12 @@ export default function ModalAddExpense({
       amount: amt,
       category: activeCategory,
       note: note.trim(),
-      date: new Date().toISOString().slice(0, 10),
+      date: date.toISOString().slice(0, 10),
     });
     setAmount("");
     setNote("");
     setSelectedCategory(null);
+    setDate(new Date());
     onClose();
   };
 
@@ -112,13 +123,38 @@ export default function ModalAddExpense({
           style={{ marginBottom: Spacing.base }}
         />
 
-        <ThemedText
-          type="caption"
-          color="textSecondary"
-          style={{ marginBottom: Spacing.xs }}
-        >
-          Category
-        </ThemedText>
+         <ThemedText
+           type="caption"
+           color="textSecondary"
+           style={{ marginBottom: Spacing.xs }}
+         >
+           Date
+         </ThemedText>
+         <Pressable
+           style={[styles.dateBtn, { backgroundColor: colors.surface }]}
+           onPress={() => setShowDatePicker(true)}
+         >
+           <ThemedText type="body" color="textPrimary">
+             {date.toDateString()}
+           </ThemedText>
+         </Pressable>
+         {showDatePicker && (
+           <DateTimePicker
+             value={date}
+             mode="date"
+             display="default"
+             onChange={onDateChange}
+           />
+         )}
+
+         <ThemedText
+           type="caption"
+           color="textSecondary"
+           style={{ marginBottom: Spacing.xs }}
+         >
+           Category
+         </ThemedText>
+
         <View style={styles.chipRow}>
           {categories.map((c) => (
             <Chip
@@ -154,6 +190,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: Spacing.xl,
+  },
+  dateBtn: {
+    padding: Spacing.md,
+    borderRadius: Radius.button,
+    marginBottom: Spacing.base,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+    alignItems: "center",
   },
   chipRow: {
     flexDirection: "row",

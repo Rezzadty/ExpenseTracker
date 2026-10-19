@@ -128,19 +128,21 @@ export default function AnalyticsScreen() {
               )}
             </ThemedView>
 
-            <ThemedView surface="surface" style={styles.card}>
-              <ThemedText
-                type="sectionTitle"
-                color="textSecondary"
-                style={{ marginBottom: Spacing.base }}
-              >
-                {timeframe === "monthly" ? "Monthly Breakdown" : "Daily Trend"}
-              </ThemedText>
-              <CardAnalyticsTrend
-                expenses={filteredExpenses}
-                timeframe={timeframe}
-              />
-            </ThemedView>
+            {timeframe !== "daily" && (
+              <ThemedView surface="surface" style={styles.card}>
+                <ThemedText
+                  type="sectionTitle"
+                  color="textSecondary"
+                  style={{ marginBottom: Spacing.base }}
+                >
+                  {timeframe === "monthly" ? "Monthly Breakdown" : "Daily Trend"}
+                </ThemedText>
+                <CardAnalyticsTrend
+                  expenses={filteredExpenses}
+                  timeframe={timeframe}
+                />
+              </ThemedView>
+            )}
           </ScrollView>
         </AnimatedScreen>
       </SafeAreaView>

@@ -7,12 +7,13 @@ import {
   DEFAULT_CATEGORY_COLORS,
   LightColors,
 } from "@/constants/theme";
-import { supabase } from "@/lib/supabase";
 import {
   convertAmount,
   FALLBACK_RATES,
   fetchLiveExchangeRates,
 } from "@/services/exchange-rate";
+import { expenseService } from "@/services/expenses";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Expense } from "@/types/expense";
 import {
   type CurrencyCode,
@@ -30,6 +31,7 @@ import {
 } from "react";
 import { useColorScheme } from "react-native";
 import { useAuth } from "./use-auth";
+
 
 export type ThemeMode = "system" | "dark" | "light";
 
@@ -67,52 +69,40 @@ function useExpensesStore() {
         if (mounted) {
           setExpenses([]);
           setCategories(DEFAULT_CATEGORIES);
+          await AsyncStorage.removeItem("cached_expenses");
+          await AsyncStorage.removeItem("cached_categories");
         }
         return;
       }
 
-      const { data: catData } = await supabase
-        .from("categories")
-        .select("id, name, color")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: true });
+      try {
+        const cachedExp = await AsyncStorage.getItem("cached_expenses");
+        const cachedCat = await AsyncStorage.getItem("cached_categories");
 
-      if (mounted) {
-        if (catData && catData.length > 0) {
-          setCategories(catData);
-        } else {
-          const seeds = DEFAULT_CATEGORIES.map((c) => ({
-            user_id: user.id,
-            name: c.name,
-            color: c.color,
-            is_default: true,
-          }));
-          const { data: insertedCats } = await supabase
-            .from("categories")
-            .insert(seeds)
-            .select("id, name, color");
-          if (mounted && insertedCats) {
-            setCategories(insertedCats);
+        if (mounted && cachedExp) setExpenses(JSON.parse(cachedExp));
+        if (mounted && cachedCat) setCategories(JSON.parse(cachedCat));
+
+        const catData = await expenseService.fetchCategories(user.id);
+        if (mounted) {
+          if (catData && catData.length > 0) {
+            setCategories(catData);
+            await AsyncStorage.setItem("cached_categories", JSON.stringify(catData));
+          } else {
+            const insertedCats = await expenseService.seedCategories(user.id, DEFAULT_CATEGORIES);
+            if (mounted) {
+              setCategories(insertedCats);
+              await AsyncStorage.setItem("cached_categories", JSON.stringify(insertedCats));
+            }
           }
         }
-      }
 
-      const { data: expData } = await supabase
-        .from("expenses")
-        .select("id, amount, category, date, note")
-        .eq("user_id", user.id)
-        .order("date", { ascending: false });
-
-      if (mounted && expData) {
-        setExpenses(
-          expData.map((e) => ({
-            id: e.id,
-            amount: e.amount,
-            category: e.category,
-            note: e.note ?? "",
-            date: e.date,
-          })),
-        );
+        const expData = await expenseService.fetchExpenses(user.id);
+        if (mounted) {
+          setExpenses(expData);
+          await AsyncStorage.setItem("cached_expenses", JSON.stringify(expData));
+        }
+      } catch (e) {
+        console.error("Failed to sync expenses:", e);
       }
     })();
 
@@ -124,19 +114,15 @@ function useExpensesStore() {
   const addCategory = useCallback(
     async (cat: Omit<CategoryItem, "id">) => {
       if (!user) return;
-      const { data: inserted, error } = await supabase
-        .from("categories")
-        .insert({
-          user_id: user.id,
-          name: cat.name,
-          color: cat.color,
-          is_default: false,
-        })
-        .select("id, name, color")
-        .single();
-
-      if (!error && inserted) {
-        setCategories((prev) => [...prev, inserted]);
+      try {
+        const inserted = await expenseService.addCategory(user.id, cat);
+        setCategories((prev) => {
+          const updated = [...prev, inserted];
+          AsyncStorage.setItem("cached_categories", JSON.stringify(updated));
+          return updated;
+        });
+      } catch (e) {
+        console.error(e);
       }
     },
     [user],
@@ -147,37 +133,17 @@ function useExpensesStore() {
       if (!user) return;
       const target = categories.find((c) => c.id === id);
       if (!target) return;
-      const oldName = target.name;
-      const newName = cat.name ?? target.name;
-      const newColor = cat.color ?? target.color;
-
-      const { error } = await supabase
-        .from("categories")
-        .update({ name: newName, color: newColor })
-        .eq("id", id)
-        .eq("user_id", user.id);
-
-      if (error) return;
-
-      if (oldName !== newName) {
-        await supabase
-          .from("expenses")
-          .update({ category: newName })
-          .eq("user_id", user.id)
-          .eq("category", oldName);
-
-        setExpenses((currExp) =>
-          currExp.map((e) =>
-            e.category === oldName ? { ...e, category: newName } : e,
-          ),
-        );
+      
+      try {
+        await expenseService.updateCategory(user.id, id, cat, target.name);
+        setCategories((prev) => {
+          const updated = prev.map((c) => (c.id === id ? { ...c, ...cat } : c));
+          AsyncStorage.setItem("cached_categories", JSON.stringify(updated));
+          return updated;
+        });
+      } catch (e) {
+        console.error(e);
       }
-
-      setCategories((prev) =>
-        prev.map((c) =>
-          c.id === id ? { ...c, name: newName, color: newColor } : c,
-        ),
-      );
     },
     [user, categories],
   );
@@ -188,26 +154,16 @@ function useExpensesStore() {
       const target = categories.find((c) => c.id === id);
       if (!target) return;
 
-      const { error } = await supabase
-        .from("categories")
-        .delete()
-        .eq("id", id)
-        .eq("user_id", user.id);
-
-      if (error) return;
-
-      await supabase
-        .from("expenses")
-        .update({ category: "Other" })
-        .eq("user_id", user.id)
-        .eq("category", target.name);
-
-      setExpenses((currExp) =>
-        currExp.map((e) =>
-          e.category === target.name ? { ...e, category: "Other" } : e,
-        ),
-      );
-      setCategories((prev) => prev.filter((c) => c.id !== id));
+      try {
+        await expenseService.deleteCategory(user.id, id, target.name);
+        setCategories((prev) => {
+          const updated = prev.filter((c) => c.id !== id);
+          AsyncStorage.setItem("cached_categories", JSON.stringify(updated));
+          return updated;
+        });
+      } catch (e) {
+        console.error(e);
+      }
     },
     [user, categories],
   );
@@ -254,28 +210,16 @@ function useExpensesStore() {
   const addExpense = useCallback(
     async (data: Omit<Expense, "id">) => {
       if (!user) return;
-      const { data: inserted, error } = await supabase
-        .from("expenses")
-        .insert({
-          user_id: user.id,
-          amount: Math.round(data.amount),
-          category: data.category,
-          date: data.date,
-          note: data.note || null,
-        })
-        .select("id, amount, category, date, note")
-        .single();
-
-      if (error || !inserted) return;
-
-      const item: Expense = {
-        id: inserted.id,
-        amount: inserted.amount,
-        category: inserted.category,
-        note: inserted.note ?? "",
-        date: inserted.date,
-      };
-      setExpenses((prev) => [item, ...prev]);
+      try {
+        const item = await expenseService.addExpense(user.id, data);
+        setExpenses((prev) => {
+          const updated = [item, ...prev];
+          AsyncStorage.setItem("cached_expenses", JSON.stringify(updated));
+          return updated;
+        });
+      } catch (e) {
+        console.error(e);
+      }
     },
     [user],
   );
@@ -283,14 +227,15 @@ function useExpensesStore() {
   const deleteExpense = useCallback(
     async (id: string) => {
       if (!user) return;
-      const { error } = await supabase
-        .from("expenses")
-        .delete()
-        .eq("id", id)
-        .eq("user_id", user.id);
-
-      if (!error) {
-        setExpenses((prev) => prev.filter((e) => e.id !== id));
+      try {
+        await expenseService.deleteExpense(user.id, id);
+        setExpenses((prev) => {
+          const updated = prev.filter((e) => e.id !== id);
+          AsyncStorage.setItem("cached_expenses", JSON.stringify(updated));
+          return updated;
+        });
+      } catch (e) {
+        console.error(e);
       }
     },
     [user],
@@ -299,42 +244,28 @@ function useExpensesStore() {
   const updateExpense = useCallback(
     async (id: string, data: Partial<Omit<Expense, "id">>) => {
       if (!user) return;
-      const payload: Record<string, unknown> = {};
-      if (data.amount !== undefined) payload.amount = Math.round(data.amount);
-      if (data.category !== undefined) payload.category = data.category;
-      if (data.date !== undefined) payload.date = data.date;
-      if (data.note !== undefined) payload.note = data.note || null;
-
-      const { data: updated, error } = await supabase
-        .from("expenses")
-        .update(payload)
-        .eq("id", id)
-        .eq("user_id", user.id)
-        .select("id, amount, category, date, note")
-        .single();
-
-      if (error || !updated) return;
-
-      const item: Expense = {
-        id: updated.id,
-        amount: updated.amount,
-        category: updated.category,
-        note: updated.note ?? "",
-        date: updated.date,
-      };
-      setExpenses((prev) => prev.map((e) => (e.id === id ? item : e)));
+      try {
+        const item = await expenseService.updateExpense(user.id, id, data);
+        setExpenses((prev) => {
+          const updated = prev.map((e) => (e.id === id ? item : e));
+          AsyncStorage.setItem("cached_expenses", JSON.stringify(updated));
+          return updated;
+        });
+      } catch (e) {
+        console.error(e);
+      }
     },
     [user],
   );
 
   const clearAllExpenses = useCallback(async () => {
     if (!user) return;
-    const { error } = await supabase
-      .from("expenses")
-      .delete()
-      .eq("user_id", user.id);
-    if (!error) {
+    try {
+      await expenseService.clearAllExpenses(user.id);
       setExpenses([]);
+      await AsyncStorage.removeItem("cached_expenses");
+    } catch (e) {
+      console.error(e);
     }
   }, [user]);
 
