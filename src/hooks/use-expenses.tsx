@@ -27,6 +27,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useColorScheme } from "react-native";
@@ -35,12 +36,15 @@ import { useAuth } from "./use-auth";
 
 export type ThemeMode = "system" | "dark" | "light";
 
+// Base currency is always IDR — amounts stored in DB and state in IDR
+const BASE_CURRENCY: CurrencyCode = "IDR";
+
 function useExpensesStore() {
   const { user } = useAuth();
   const systemColorScheme = useColorScheme();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [dailyBudget, setDailyBudget] = useState<number>(200000);
-  const [currency, setCurrencyState] = useState<CurrencyCode>("IDR");
+  const [displayCurrency, setDisplayCurrencyState] = useState<CurrencyCode>("IDR");
   const [separatorStyle, setSeparatorStyle] = useState<SeparatorStyle>("dot");
   const [rates, setRates] =
     useState<Record<CurrencyCode, number>>(FALLBACK_RATES);
@@ -51,6 +55,22 @@ function useExpensesStore() {
   const [categories, setCategories] =
     useState<CategoryItem[]>(DEFAULT_CATEGORIES);
 
+  // Track current user ID and state refs to prevent race conditions on rapid transitions
+  const userIdRef = useRef<string | undefined>(user?.id);
+  useEffect(() => {
+    userIdRef.current = user?.id;
+  }, [user?.id]);
+
+  const expensesRef = useRef(expenses);
+  useEffect(() => {
+    expensesRef.current = expenses;
+  }, [expenses]);
+
+  const categoriesRef = useRef(categories);
+  useEffect(() => {
+    categoriesRef.current = categories;
+  }, [categories]);
+
   const categoryColorMap = useMemo(() => {
     const map: Record<string, string> = { ...DEFAULT_CATEGORY_COLORS };
     for (const c of categories) {
@@ -59,18 +79,17 @@ function useExpensesStore() {
     return map;
   }, [categories]);
 
-  // Load categories and expenses from Supabase on user session change
-  // ponytail: direct supabase queries without offline sync queue; add offline sync when network-resilient storage needed
   useEffect(() => {
     let mounted = true;
+    const currentUserId = user?.id;
 
     (async () => {
       if (!user) {
-        if (mounted) {
+        if (mounted && userIdRef.current === undefined) {
           setExpenses([]);
           setCategories(DEFAULT_CATEGORIES);
-          await AsyncStorage.removeItem("cached_expenses");
-          await AsyncStorage.removeItem("cached_categories");
+          await AsyncStorage.removeItem("cached_expenses").catch(console.error);
+          await AsyncStorage.removeItem("cached_categories").catch(console.error);
         }
         return;
       }
@@ -78,28 +97,32 @@ function useExpensesStore() {
       try {
         const cachedExp = await AsyncStorage.getItem("cached_expenses");
         const cachedCat = await AsyncStorage.getItem("cached_categories");
+        const cachedCurrency = await AsyncStorage.getItem("cached_currency") as CurrencyCode | null;
 
-        if (mounted && cachedExp) setExpenses(JSON.parse(cachedExp));
-        if (mounted && cachedCat) setCategories(JSON.parse(cachedCat));
+        if (mounted && userIdRef.current === currentUserId) {
+          if (cachedExp) setExpenses(JSON.parse(cachedExp));
+          if (cachedCat) setCategories(JSON.parse(cachedCat));
+          if (cachedCurrency) setDisplayCurrencyState(cachedCurrency);
+        }
 
         const catData = await expenseService.fetchCategories(user.id);
-        if (mounted) {
+        if (mounted && userIdRef.current === currentUserId) {
           if (catData && catData.length > 0) {
             setCategories(catData);
-            await AsyncStorage.setItem("cached_categories", JSON.stringify(catData));
+            await AsyncStorage.setItem("cached_categories", JSON.stringify(catData)).catch(console.error);
           } else {
             const insertedCats = await expenseService.seedCategories(user.id, DEFAULT_CATEGORIES);
-            if (mounted) {
+            if (mounted && userIdRef.current === currentUserId) {
               setCategories(insertedCats);
-              await AsyncStorage.setItem("cached_categories", JSON.stringify(insertedCats));
+              await AsyncStorage.setItem("cached_categories", JSON.stringify(insertedCats)).catch(console.error);
             }
           }
         }
 
         const expData = await expenseService.fetchExpenses(user.id);
-        if (mounted) {
+        if (mounted && userIdRef.current === currentUserId) {
           setExpenses(expData);
-          await AsyncStorage.setItem("cached_expenses", JSON.stringify(expData));
+          await AsyncStorage.setItem("cached_expenses", JSON.stringify(expData)).catch(console.error);
         }
       } catch (e) {
         console.error("Failed to sync expenses:", e);
@@ -114,13 +137,16 @@ function useExpensesStore() {
   const addCategory = useCallback(
     async (cat: Omit<CategoryItem, "id">) => {
       if (!user) return;
+      const currentUserId = userIdRef.current;
       try {
         const inserted = await expenseService.addCategory(user.id, cat);
-        setCategories((prev) => {
-          const updated = [...prev, inserted];
-          AsyncStorage.setItem("cached_categories", JSON.stringify(updated));
-          return updated;
-        });
+        const updated = [...categoriesRef.current, inserted];
+        setCategories(updated);
+        if (userIdRef.current === currentUserId) {
+          AsyncStorage.setItem("cached_categories", JSON.stringify(updated)).catch((e) =>
+            console.error("Failed to cache categories:", e)
+          );
+        }
       } catch (e) {
         console.error(e);
       }
@@ -131,41 +157,47 @@ function useExpensesStore() {
   const updateCategory = useCallback(
     async (id: string, cat: Partial<Omit<CategoryItem, "id">>) => {
       if (!user) return;
-      const target = categories.find((c) => c.id === id);
+      const currentUserId = userIdRef.current;
+      const target = categoriesRef.current.find((c) => c.id === id);
       if (!target) return;
-      
+
       try {
         await expenseService.updateCategory(user.id, id, cat, target.name);
-        setCategories((prev) => {
-          const updated = prev.map((c) => (c.id === id ? { ...c, ...cat } : c));
-          AsyncStorage.setItem("cached_categories", JSON.stringify(updated));
-          return updated;
-        });
+        const updated = categoriesRef.current.map((c) => (c.id === id ? { ...c, ...cat } : c));
+        setCategories(updated);
+        if (userIdRef.current === currentUserId) {
+          AsyncStorage.setItem("cached_categories", JSON.stringify(updated)).catch((e) =>
+            console.error("Failed to cache categories:", e)
+          );
+        }
       } catch (e) {
         console.error(e);
       }
     },
-    [user, categories],
+    [user],
   );
 
   const deleteCategory = useCallback(
     async (id: string) => {
       if (!user) return;
-      const target = categories.find((c) => c.id === id);
+      const currentUserId = userIdRef.current;
+      const target = categoriesRef.current.find((c) => c.id === id);
       if (!target) return;
 
       try {
         await expenseService.deleteCategory(user.id, id, target.name);
-        setCategories((prev) => {
-          const updated = prev.filter((c) => c.id !== id);
-          AsyncStorage.setItem("cached_categories", JSON.stringify(updated));
-          return updated;
-        });
+        const updated = categoriesRef.current.filter((c) => c.id !== id);
+        setCategories(updated);
+        if (userIdRef.current === currentUserId) {
+          AsyncStorage.setItem("cached_categories", JSON.stringify(updated)).catch((e) =>
+            console.error("Failed to cache categories:", e)
+          );
+        }
       } catch (e) {
         console.error(e);
       }
     },
-    [user, categories],
+    [user],
   );
 
   const isDark = useMemo(() => {
@@ -179,44 +211,40 @@ function useExpensesStore() {
 
   useEffect(() => {
     let mounted = true;
-    fetchLiveExchangeRates().then((liveRates) => {
-      if (mounted) {
-        setRates(liveRates);
-        setIsRatesLive(true);
-      }
-    });
+    fetchLiveExchangeRates()
+      .then((liveRates) => {
+        if (mounted) {
+          setRates(liveRates);
+          setIsRatesLive(true);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch exchange rates:", err);
+      });
     return () => {
       mounted = false;
     };
   }, []);
 
-  const setCurrency = useCallback(
-    (newCurrency: CurrencyCode) => {
-      if (newCurrency === currency) return;
-      setExpenses((prev) =>
-        prev.map((e) => ({
-          ...e,
-          amount: convertAmount(e.amount, currency, newCurrency, rates),
-        })),
-      );
-      setDailyBudget((prev) =>
-        convertAmount(prev, currency, newCurrency, rates),
-      );
-      setCurrencyState(newCurrency);
-    },
-    [currency, rates],
-  );
+  // Currency is display-only — amounts stored in base currency (IDR), converted on display
+  const setCurrency = useCallback((newCurrency: CurrencyCode) => {
+    setDisplayCurrencyState(newCurrency);
+    AsyncStorage.setItem("cached_currency", newCurrency);
+  }, []);
 
   const addExpense = useCallback(
     async (data: Omit<Expense, "id">) => {
       if (!user) return;
+      const currentUserId = userIdRef.current;
       try {
         const item = await expenseService.addExpense(user.id, data);
-        setExpenses((prev) => {
-          const updated = [item, ...prev];
-          AsyncStorage.setItem("cached_expenses", JSON.stringify(updated));
-          return updated;
-        });
+        const updated = [item, ...expensesRef.current];
+        setExpenses(updated);
+        if (userIdRef.current === currentUserId) {
+          AsyncStorage.setItem("cached_expenses", JSON.stringify(updated)).catch((e) =>
+            console.error("Failed to cache expenses:", e)
+          );
+        }
       } catch (e) {
         console.error(e);
       }
@@ -227,13 +255,16 @@ function useExpensesStore() {
   const deleteExpense = useCallback(
     async (id: string) => {
       if (!user) return;
+      const currentUserId = userIdRef.current;
       try {
         await expenseService.deleteExpense(user.id, id);
-        setExpenses((prev) => {
-          const updated = prev.filter((e) => e.id !== id);
-          AsyncStorage.setItem("cached_expenses", JSON.stringify(updated));
-          return updated;
-        });
+        const updated = expensesRef.current.filter((e) => e.id !== id);
+        setExpenses(updated);
+        if (userIdRef.current === currentUserId) {
+          AsyncStorage.setItem("cached_expenses", JSON.stringify(updated)).catch((e) =>
+            console.error("Failed to cache expenses:", e)
+          );
+        }
       } catch (e) {
         console.error(e);
       }
@@ -244,13 +275,16 @@ function useExpensesStore() {
   const updateExpense = useCallback(
     async (id: string, data: Partial<Omit<Expense, "id">>) => {
       if (!user) return;
+      const currentUserId = userIdRef.current;
       try {
         const item = await expenseService.updateExpense(user.id, id, data);
-        setExpenses((prev) => {
-          const updated = prev.map((e) => (e.id === id ? item : e));
-          AsyncStorage.setItem("cached_expenses", JSON.stringify(updated));
-          return updated;
-        });
+        const updated = expensesRef.current.map((e) => (e.id === id ? item : e));
+        setExpenses(updated);
+        if (userIdRef.current === currentUserId) {
+          AsyncStorage.setItem("cached_expenses", JSON.stringify(updated)).catch((e) =>
+            console.error("Failed to cache expenses:", e)
+          );
+        }
       } catch (e) {
         console.error(e);
       }
@@ -263,7 +297,7 @@ function useExpensesStore() {
     try {
       await expenseService.clearAllExpenses(user.id);
       setExpenses([]);
-      await AsyncStorage.removeItem("cached_expenses");
+      await AsyncStorage.removeItem("cached_expenses").catch(console.error);
     } catch (e) {
       console.error(e);
     }
@@ -274,14 +308,12 @@ function useExpensesStore() {
     [expenses],
   );
 
-  const today = new Date().toISOString().slice(0, 10);
-  const todaySpent = useMemo(
-    () =>
-      expenses
-        .filter((e) => e.date === today)
-        .reduce((s, e) => s + e.amount, 0),
-    [expenses, today],
-  );
+  const todaySpent = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    return expenses
+      .filter((e) => e.date === today)
+      .reduce((s, e) => s + e.amount, 0);
+  }, [expenses]);
 
   const byCategory = useMemo(() => {
     const map: Partial<Record<Category, number>> = {};
@@ -291,43 +323,78 @@ function useExpensesStore() {
     return map;
   }, [expenses]);
 
+  // Convert from base currency to display currency for formatting
   const formatAmount = useCallback(
-    (amount: number) => formatMoneyUtil(amount, currency, separatorStyle),
-    [currency, separatorStyle],
+    (amountInBase: number) => {
+      const converted = displayCurrency === BASE_CURRENCY
+        ? amountInBase
+        : convertAmount(amountInBase, BASE_CURRENCY, displayCurrency, rates);
+      return formatMoneyUtil(converted, displayCurrency, separatorStyle);
+    },
+    [displayCurrency, separatorStyle, rates],
   );
 
-  return {
-    expenses,
-    dailyBudget,
-    setDailyBudget,
-    currency,
-    setCurrency,
-    separatorStyle,
-    setSeparatorStyle,
-    formatAmount,
-    rates,
-    isRatesLive,
-    themeMode,
-    setThemeMode,
-    isDark,
-    colors,
-    reminderEnabled,
-    setReminderEnabled,
-    reminderTime,
-    setReminderTime,
-    addExpense,
-    updateExpense,
-    deleteExpense,
-    clearAllExpenses,
-    totalSpent,
-    todaySpent,
-    byCategory,
-    categories,
-    categoryColorMap,
-    addCategory,
-    updateCategory,
-    deleteCategory,
-  } as const;
+  return useMemo(
+    () => ({
+      expenses,
+      dailyBudget,
+      setDailyBudget,
+      currency: displayCurrency,
+      setCurrency,
+      separatorStyle,
+      setSeparatorStyle,
+      formatAmount,
+      rates,
+      isRatesLive,
+      themeMode,
+      setThemeMode,
+      isDark,
+      colors,
+      reminderEnabled,
+      setReminderEnabled,
+      reminderTime,
+      setReminderTime,
+      addExpense,
+      updateExpense,
+      deleteExpense,
+      clearAllExpenses,
+      totalSpent,
+      todaySpent,
+      byCategory,
+      categories,
+      categoryColorMap,
+      addCategory,
+      updateCategory,
+      deleteCategory,
+    }),
+    [
+      expenses,
+      dailyBudget,
+      displayCurrency,
+      setCurrency,
+      separatorStyle,
+      formatAmount,
+      rates,
+      isRatesLive,
+      themeMode,
+      isDark,
+      colors,
+      reminderEnabled,
+      reminderTime,
+      addExpense,
+      updateExpense,
+      deleteExpense,
+      clearAllExpenses,
+      totalSpent,
+      todaySpent,
+      byCategory,
+      categories,
+      categoryColorMap,
+      addCategory,
+      updateCategory,
+      deleteCategory,
+    ],
+  );
 }
 
 type ExpensesContextType = ReturnType<typeof useExpensesStore>;

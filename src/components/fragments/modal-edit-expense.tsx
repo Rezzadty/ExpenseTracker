@@ -30,43 +30,36 @@ export type ModalEditExpenseProps = {
   }) => void;
 };
 
-export default function ModalEditExpense({
-  visible,
+function ModalEditForm({
   expense,
   onClose,
   onSave,
-}: ModalEditExpenseProps) {
+}: {
+  expense: Expense;
+  onClose: () => void;
+  onSave: ModalEditExpenseProps["onSave"];
+}) {
   const { currency, colors, categories } = useExpenses();
   const symbol = CURRENCY_OPTIONS[currency]?.symbol || "Rp";
 
-  const [amount, setAmount] = useState("");
-  const [note, setNote] = useState("");
-  const [date, setDate] = useState("");
-  const [category, setCategory] = useState<Category>("Food");
-  const [prevExpense, setPrevExpense] = useState<Expense | null>(null);
-  const [prevVisible, setPrevVisible] = useState(false);
-
-  if (visible !== prevVisible || expense !== prevExpense) {
-    setPrevVisible(visible);
-    setPrevExpense(expense);
-    if (expense) {
-      setAmount(expense.amount.toString());
-      setNote(expense.note);
-      setDate(expense.date);
-      setCategory(expense.category);
-    } else {
-      setAmount("");
-      setNote("");
-      setDate("");
-      setCategory("Food");
-    }
-  }
+  const [amount, setAmount] = useState(expense.amount.toString());
+  const [note, setNote] = useState(expense.note);
+  const [date, setDate] = useState(expense.date);
+  const [category, setCategory] = useState<Category>(expense.category);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSave = () => {
-    if (!expense) return;
+    setError(null);
     const raw = amount.replace(/,/g, ".");
     const amt = parseFloat(raw);
-    if (isNaN(amt) || amt <= 0 || !note.trim()) return;
+    if (isNaN(amt) || amt <= 0) {
+      setError("Please enter a valid amount");
+      return;
+    }
+    if (!note.trim()) {
+      setError("Please enter a note");
+      return;
+    }
 
     onSave({
       id: expense.id,
@@ -79,145 +72,179 @@ export default function ModalEditExpense({
   };
 
   return (
-    <AnimatedModal visible={visible} onClose={onClose}>
-      <View style={[styles.content, { backgroundColor: colors.surface }]}>
-        <View style={styles.header}>
-          <View>
-            <View style={styles.badgeRow}>
-              <View
-                style={[
-                  styles.badge,
-                  { backgroundColor: colors.edit + "20" },
-                ]}
+    <View style={[styles.content, { backgroundColor: colors.surface }]}>
+      <View style={styles.header}>
+        <View>
+          <View style={styles.badgeRow}>
+            <View
+              style={[
+                styles.badge,
+                { backgroundColor: colors.edit + "20" },
+              ]}
+            >
+              <ThemedText
+                type="caption"
+                style={{
+                  color: colors.edit,
+                  fontFamily: Fonts.sansSemiBold,
+                  fontWeight: "600",
+                  fontSize: 11,
+                }}
               >
-                <ThemedText
-                  type="caption"
-                  style={{
-                    color: colors.edit,
-                    fontFamily: Fonts.sansSemiBold,
-                    fontWeight: "600",
-                    fontSize: 11,
-                  }}
-                >
-                  EDIT MODE
-                </ThemedText>
-              </View>
+                EDIT MODE
+              </ThemedText>
             </View>
-            <ThemedText
-              type="body"
-              color="textPrimary"
-              style={{
-                fontFamily: Fonts.sansBold,
-                fontWeight: "700",
-                fontSize: 18,
-                marginTop: 2,
-              }}
-            >
-              Edit Expense
-            </ThemedText>
           </View>
-          <Pressable onPress={onClose} hitSlop={12}>
-            <ThemedText type="body" color="textMuted" style={{ fontSize: 22 }}>
-              ✕
-            </ThemedText>
-          </Pressable>
-        </View>
-
-        <ThemedText
-          type="caption"
-          color="textSecondary"
-          style={{ marginBottom: Spacing.xs }}
-        >
-          {`Amount (${symbol})`}
-        </ThemedText>
-        <Input
-          placeholder="e.g. 50000"
-          keyboardType="numeric"
-          value={amount}
-          onChangeText={setAmount}
-          style={{ marginBottom: Spacing.base }}
-        />
-
-        <ThemedText
-          type="caption"
-          color="textSecondary"
-          style={{ marginBottom: Spacing.xs }}
-        >
-          Note
-        </ThemedText>
-        <Input
-          placeholder="What was it for?"
-          value={note}
-          onChangeText={setNote}
-          style={{ marginBottom: Spacing.base }}
-        />
-
-        <ThemedText
-          type="caption"
-          color="textSecondary"
-          style={{ marginBottom: Spacing.xs }}
-        >
-          Date
-        </ThemedText>
-        <Input
-          placeholder="YYYY-MM-DD"
-          value={date}
-          onChangeText={setDate}
-          style={{ marginBottom: Spacing.base }}
-        />
-
-        <ThemedText
-          type="caption"
-          color="textSecondary"
-          style={{ marginBottom: Spacing.xs }}
-        >
-          Category
-        </ThemedText>
-        <View style={styles.chipRow}>
-          {categories.map((c) => (
-            <Chip
-              key={c.id}
-              label={c.name}
-              selected={category === c.name}
-              onPress={() => setCategory(c.name)}
-            />
-          ))}
-        </View>
-
-        <View style={styles.footer}>
-          <Pressable
-            style={[
-              styles.cancelBtn,
-              { backgroundColor: colors.surfaceRaised },
-            ]}
-            onPress={onClose}
+          <ThemedText
+            type="body"
+            color="textPrimary"
+            style={{
+              fontFamily: Fonts.sansBold,
+              fontWeight: "700",
+              fontSize: 18,
+              marginTop: 2,
+            }}
           >
-            <ThemedText
-              type="body"
-              color="textSecondary"
-              style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}
-            >
-              Cancel
-            </ThemedText>
-          </Pressable>
-
-          <Pressable
-            style={[styles.saveBtn, { backgroundColor: colors.edit }]}
-            onPress={handleSave}
-          >
-            <ThemedText
-              type="body"
-              style={{
-                color: "#FFFFFF",
-                fontFamily: Fonts.sansSemiBold,
-                fontWeight: "600",
-              }}
-            >
-              Save Changes
-            </ThemedText>
-          </Pressable>
+            Edit Expense
+          </ThemedText>
         </View>
+
+        <Pressable
+          onPress={onClose}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+        >
+          <ThemedText type="body" color="textMuted" style={{ fontSize: 22 }}>
+            ✕
+          </ThemedText>
+        </Pressable>
       </View>
+
+      {error && (
+        <ThemedText
+          type="caption"
+          color="danger"
+          style={{ marginBottom: Spacing.sm }}
+        >
+          {error}
+        </ThemedText>
+      )}
+
+      <ThemedText
+        type="caption"
+        color="textSecondary"
+        style={{ marginBottom: Spacing.xs }}
+      >
+        {`Amount (${symbol})`}
+      </ThemedText>
+      <Input
+        placeholder="e.g. 50000"
+        keyboardType="numeric"
+        value={amount}
+        onChangeText={setAmount}
+        style={{ marginBottom: Spacing.base }}
+      />
+
+      <ThemedText
+        type="caption"
+        color="textSecondary"
+        style={{ marginBottom: Spacing.xs }}
+      >
+        Note
+      </ThemedText>
+      <Input
+        placeholder="What was it for?"
+        value={note}
+        onChangeText={setNote}
+        style={{ marginBottom: Spacing.base }}
+      />
+
+      <ThemedText
+        type="caption"
+        color="textSecondary"
+        style={{ marginBottom: Spacing.xs }}
+      >
+        Date
+      </ThemedText>
+      <Input
+        placeholder="YYYY-MM-DD"
+        value={date}
+        onChangeText={setDate}
+        style={{ marginBottom: Spacing.base }}
+      />
+
+      <ThemedText
+        type="caption"
+        color="textSecondary"
+        style={{ marginBottom: Spacing.xs }}
+      >
+        Category
+      </ThemedText>
+      <View style={styles.chipRow}>
+        {categories.map((c) => (
+          <Chip
+            key={c.id}
+            label={c.name}
+            selected={category === c.name}
+            onPress={() => setCategory(c.name)}
+          />
+        ))}
+      </View>
+
+      <View style={styles.footer}>
+        <Pressable
+          style={[
+            styles.cancelBtn,
+            { backgroundColor: colors.surfaceRaised },
+          ]}
+          onPress={onClose}
+        >
+          <ThemedText
+            type="body"
+            color="textSecondary"
+            style={{ fontFamily: Fonts.sansSemiBold, fontWeight: "600" }}
+          >
+            Cancel
+          </ThemedText>
+        </Pressable>
+
+        <Pressable
+          style={[styles.saveBtn, { backgroundColor: colors.edit }]}
+          onPress={handleSave}
+        >
+          <ThemedText
+            type="body"
+            style={{
+              color: "#FFFFFF",
+              fontFamily: Fonts.sansSemiBold,
+              fontWeight: "600",
+            }}
+          >
+            Save Changes
+          </ThemedText>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+export default function ModalEditExpense({
+  visible,
+  expense,
+  onClose,
+  onSave,
+}: ModalEditExpenseProps) {
+  return (
+    <AnimatedModal visible={visible && !!expense} onClose={onClose}>
+      {expense ? (
+        <ModalEditForm
+          key={expense.id}
+          expense={expense}
+          onClose={onClose}
+          onSave={onSave}
+        />
+      ) : null}
     </AnimatedModal>
   );
 }

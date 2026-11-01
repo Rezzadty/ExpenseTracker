@@ -4,6 +4,7 @@ import { Spacing } from "@/constants/theme";
 import type { Timeframe } from "@/hooks/use-analytics";
 import { useExpenses } from "@/hooks/use-expenses";
 import type { Expense } from "@/types/expense";
+import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 
 type BarData = { label: string; amount: number };
@@ -61,11 +62,14 @@ export default function CardAnalyticsTrend({
   timeframe,
 }: CardAnalyticsTrendProps) {
   const { colors } = useExpenses();
-  const data =
-    timeframe === "monthly"
-      ? getMonthlyTrend(expenses)
-      : getDailyTrend(expenses);
-  const max = Math.max(...data.map((d) => d.amount), 1);
+  const data = useMemo(
+    () =>
+      timeframe === "monthly"
+        ? getMonthlyTrend(expenses)
+        : getDailyTrend(expenses),
+    [timeframe, expenses],
+  );
+  const max = useMemo(() => Math.max(...data.map((d) => d.amount), 1), [data]);
 
   return (
     <View style={styles.container}>
@@ -73,7 +77,12 @@ export default function CardAnalyticsTrend({
         {data.map((item, i) => {
           const heightPct = (item.amount / max) * 100;
           return (
-            <View key={i} style={styles.barCol}>
+            <View
+              key={i}
+              style={styles.barCol}
+              accessible={true}
+              accessibilityLabel={`${item.label}: ${item.amount}`}
+            >
               <View
                 style={[styles.barTrack, { backgroundColor: colors.track }]}
               >

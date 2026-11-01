@@ -10,12 +10,17 @@ export const FALLBACK_RATES: Record<CurrencyCode, number> = {
 };
 
 const API_URL = "https://open.er-api.com/v6/latest/USD";
+const FETCH_TIMEOUT_MS = 10000;
 
 export async function fetchLiveExchangeRates(): Promise<
   Record<CurrencyCode, number>
 > {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(API_URL, { signal: controller.signal });
+    clearTimeout(timeout);
     if (!res.ok) throw new Error("API fetch error");
     const data = await res.json();
     if (data && data.rates) {
@@ -29,6 +34,7 @@ export async function fetchLiveExchangeRates(): Promise<
     }
     return FALLBACK_RATES;
   } catch {
+    clearTimeout(timeout);
     return FALLBACK_RATES;
   }
 }

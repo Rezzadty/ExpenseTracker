@@ -42,6 +42,20 @@ export default function ModalAddExpense({
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const resetForm = () => {
+    setAmount("");
+    setNote("");
+    setSelectedCategory(null);
+    setDate(new Date());
+    setError(null);
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
 
   const activeCategory =
     (selectedCategory && categories.some((c) => c.name === selectedCategory)
@@ -56,24 +70,29 @@ export default function ModalAddExpense({
   };
 
   const handleSave = () => {
+    setError(null);
     const raw = amount.replace(/,/g, '.');
     const amt = parseFloat(raw);
-    if (isNaN(amt) || amt <= 0 || !note.trim()) return;
+    if (isNaN(amt) || amt <= 0) {
+      setError("Please enter a valid amount");
+      return;
+    }
+    if (!note.trim()) {
+      setError("Please enter a note");
+      return;
+    }
     onSave({
       amount: amt,
       category: activeCategory,
       note: note.trim(),
       date: date.toISOString().slice(0, 10),
     });
-    setAmount("");
-    setNote("");
-    setSelectedCategory(null);
-    setDate(new Date());
+    resetForm();
     onClose();
   };
 
   return (
-    <AnimatedModal visible={visible} onClose={onClose}>
+    <AnimatedModal visible={visible} onClose={handleClose}>
       <View style={[styles.content, { backgroundColor: colors.surface }]}>
         <View style={styles.header}>
           <ThemedText
@@ -87,12 +106,27 @@ export default function ModalAddExpense({
           >
             Add Expense
           </ThemedText>
-          <Pressable onPress={onClose} hitSlop={12}>
+          <Pressable
+            onPress={handleClose}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+          >
             <ThemedText type="body" color="textMuted" style={{ fontSize: 22 }}>
               ✕
             </ThemedText>
           </Pressable>
         </View>
+
+        {error && (
+          <ThemedText
+            type="caption"
+            color="danger"
+            style={{ marginBottom: Spacing.sm }}
+          >
+            {error}
+          </ThemedText>
+        )}
 
         <ThemedText
           type="caption"

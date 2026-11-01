@@ -1,4 +1,5 @@
 // Dashboard screen displaying balance summary, action buttons, category progress, and recent expenses.
+import React, { useMemo, useCallback } from 'react';
 import {
   AnimatedListItem,
   AnimatedScreen,
@@ -15,24 +16,21 @@ import {
   ModalSetBudget,
   Navbar,
 } from "@/components/fragments";
-import {
-  Fonts,
-  Radius,
-  Spacing,
-  type Category,
-} from "@/constants/theme";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { useExpenses } from "@/hooks/use-expenses";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Fonts, Spacing, Radius } from "@/constants/theme";
 
 export default function DashboardScreen() {
   const { colors, categories } = useExpenses();
   const {
-    addExpense,
-    todaySpent,
+    expenses,
     dailyBudget,
     setDailyBudget,
+    addExpense,
+    deleteExpense,
+    todaySpent,
     byCategory,
     filter,
     setFilter,
@@ -47,7 +45,7 @@ export default function DashboardScreen() {
     visible,
   } = useDashboard();
 
-  const filterOptions = ["All", ...categories.map((c) => c.name)];
+  const filterOptions = useMemo(() => ["All", ...categories.map((c) => c.name)], [categories]);
 
   return (
     <ThemedView style={styles.container}>
@@ -112,11 +110,11 @@ export default function DashboardScreen() {
               >
                 Outcome Analytics
               </ThemedText>
-              {(Object.entries(byCategory) as [Category, number][]).map(
+              {(Object.entries(byCategory) as [string, number][]).map(
                 ([cat, amt]) => (
                   <CardCategoryProgress
                     key={cat}
-                    category={cat}
+                    category={cat as any}
                     amount={amt}
                     max={maxCategory}
                   />
@@ -130,7 +128,7 @@ export default function DashboardScreen() {
                   key={c}
                   label={c}
                   selected={filter === c}
-                  onPress={() => setFilter(c)}
+                  onPress={() => setFilter(c as any)}
                 />
               ))}
             </View>

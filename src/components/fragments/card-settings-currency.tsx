@@ -25,7 +25,6 @@ export default function CardSettingsCurrency() {
     separatorStyle,
     setSeparatorStyle,
     formatAmount,
-    rates,
     isRatesLive,
     colors,
   } = useExpenses();
@@ -82,11 +81,7 @@ export default function CardSettingsCurrency() {
           color="accent"
           style={{ fontFamily: Fonts.sansBold, fontWeight: "700" }}
         >
-          {formatAmount(
-            currency === "IDR"
-              ? 250000
-              : (250000 / rates.IDR) * rates[currency],
-          )}
+          {formatAmount(250000)}
         </ThemedText>
       </View>
     </Card>

@@ -25,19 +25,24 @@ export function formatMoney(
   const targetSeparator = separator ?? config.separator;
   const targetLocale = targetSeparator === 'dot' ? 'id-ID' : 'en-US';
 
+  const safeNum = isNaN(n) || !isFinite(n) ? 0 : n;
   const isZeroDecimal = currency === 'IDR' || currency === 'JPY';
-  const formattedNumber = n.toLocaleString(targetLocale, {
+  const formattedNumber = safeNum.toLocaleString(targetLocale, {
     minimumFractionDigits: isZeroDecimal ? 0 : 2,
     maximumFractionDigits: isZeroDecimal ? 0 : 2,
   });
   return `${config.symbol} ${formattedNumber}`;
 }
 
-export function formatDate() {
-  const now = new Date();
-  const weekday = now.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-  const month = now.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
-  const day = now.getDate();
+export function formatDate(dateInput?: Date | string) {
+  const date = dateInput
+    ? typeof dateInput === 'string'
+      ? new Date(dateInput)
+      : dateInput
+    : new Date();
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+  const month = date.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
+  const day = date.getDate();
   return `${weekday}, ${month} ${day}`;
 }
 

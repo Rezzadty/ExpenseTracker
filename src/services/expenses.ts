@@ -131,16 +131,8 @@ export const expenseService = {
   },
 
   async updateCategory(userId: string, id: string, cat: Partial<Omit<CategoryItem, "id">>, oldName: string) {
-    const newName = cat.name ?? ""; 
+    const newName = cat.name ?? "";
     const newColor = cat.color ?? "";
-
-    const { error: updateErr } = await supabase
-      .from("categories")
-      .update({ name: newName, color: newColor })
-      .eq("id", id)
-      .eq("user_id", userId);
-
-    if (updateErr) throw updateErr;
 
     if (oldName !== newName) {
       const { error: expErr } = await supabase
@@ -150,17 +142,17 @@ export const expenseService = {
         .eq("category", oldName);
       if (expErr) throw expErr;
     }
-  },
 
-  async deleteCategory(userId: string, id: string, categoryName: string) {
-    const { error: catErr } = await supabase
+    const { error: updateErr } = await supabase
       .from("categories")
-      .delete()
+      .update({ name: newName, color: newColor })
       .eq("id", id)
       .eq("user_id", userId);
 
-    if (catErr) throw catErr;
+    if (updateErr) throw updateErr;
+  },
 
+  async deleteCategory(userId: string, id: string, categoryName: string) {
     const { error: expErr } = await supabase
       .from("expenses")
       .update({ category: "Other" })
@@ -168,5 +160,13 @@ export const expenseService = {
       .eq("category", categoryName);
 
     if (expErr) throw expErr;
+
+    const { error: catErr } = await supabase
+      .from("categories")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", userId);
+
+    if (catErr) throw catErr;
   },
 };
