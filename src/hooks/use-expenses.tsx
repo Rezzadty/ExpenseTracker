@@ -32,6 +32,7 @@ import {
 } from "react";
 import { useColorScheme } from "react-native";
 import { useAuth } from "./use-auth";
+import { useToday } from "./use-today";
 
 
 export type ThemeMode = "system" | "dark" | "light";
@@ -54,6 +55,8 @@ function useExpensesStore() {
   const [reminderTime, setReminderTime] = useState<string>("20:00");
   const [categories, setCategories] =
     useState<CategoryItem[]>(DEFAULT_CATEGORIES);
+
+  const today = useToday();
 
   // Track current user ID and state refs to prevent race conditions on rapid transitions
   const userIdRef = useRef<string | undefined>(user?.id);
@@ -309,11 +312,10 @@ function useExpensesStore() {
   );
 
   const todaySpent = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10);
     return expenses
       .filter((e) => e.date === today)
       .reduce((s, e) => s + e.amount, 0);
-  }, [expenses]);
+  }, [expenses, today]);
 
   const byCategory = useMemo(() => {
     const map: Partial<Record<Category, number>> = {};
