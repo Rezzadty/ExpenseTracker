@@ -1,6 +1,9 @@
 export type CurrencyCode = 'IDR' | 'USD' | 'EUR' | 'GBP' | 'JPY';
 export type SeparatorStyle = 'dot' | 'comma';
 
+// Base currency for storage — all amounts saved in DB as IDR
+export const BASE_CURRENCY: CurrencyCode = 'IDR';
+
 export interface CurrencyConfig {
   code: CurrencyCode;
   symbol: string;

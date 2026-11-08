@@ -1,31 +1,35 @@
 import { useMemo, useState } from "react";
 import type { Category } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
+import { useToday } from "@/hooks/use-today";
 
 export type Timeframe = "daily" | "weekly" | "monthly";
 
 export function useAnalytics() {
   const { expenses } = useExpenses();
+  const today = useToday();
   const [timeframe, setTimeframe] = useState<Timeframe>("monthly");
 
   const filteredExpenses = useMemo(() => {
-    const today = new Date();
-    const todayStr = today.toISOString().slice(0, 10);
-
     if (timeframe === "daily") {
-      return expenses.filter((e) => e.date === todayStr);
+      return expenses.filter((e) => e.date === today);
     }
 
     if (timeframe === "weekly") {
-      const weekAgo = new Date(today);
+      const todayDate = new Date(today + "T00:00:00");
+      const weekAgo = new Date(todayDate);
       weekAgo.setDate(weekAgo.getDate() - 6);
       const weekAgoStr = weekAgo.toISOString().slice(0, 10);
-      return expenses.filter((e) => e.date >= weekAgoStr && e.date <= todayStr);
+      return expenses.filter((e) => e.date >= weekAgoStr && e.date <= today);
     }
 
-    const currentMonth = todayStr.slice(0, 7);
-    return expenses.filter((e) => e.date.startsWith(currentMonth));
-  }, [expenses, timeframe]);
+    // Monthly: explicit start and end of month
+    const [year, month] = today.split("-").map(Number);
+    const monthStart = `${year}-${String(month).padStart(2, "0")}-01`;
+    const monthEnd = new Date(year, month, 0); // last day of month
+    const monthEndStr = `${year}-${String(month).padStart(2, "0")}-${String(monthEnd.getDate()).padStart(2, "0")}`;
+    return expenses.filter((e) => e.date >= monthStart && e.date <= monthEndStr);
+  }, [expenses, timeframe, today]);
 
   const totalSpent = useMemo(
     () => filteredExpenses.reduce((s, e) => s + e.amount, 0),

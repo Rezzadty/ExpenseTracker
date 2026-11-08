@@ -61,16 +61,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (username: string): Promise<{ success: boolean; error?: string }> => {
-      const trimmed = username.trim().toLowerCase();
-      if (!trimmed) {
+      // Normalize once: trim + lowercase
+      const normalized = username.trim().toLowerCase();
+      if (!normalized) {
         return { success: false, error: "Username is required" };
       }
+
+      // Escape ILIKE wildcards (% and _) to treat them as literal characters
+      const escaped = normalized.replace(/[%_]/g, (ch) => `\\${ch}`);
 
       try {
         const { data: allowed, error: allowedError } = await supabase
           .from("allowed_users")
           .select("username")
-          .ilike("username", trimmed)
+          .ilike("username", escaped)
           .maybeSingle();
 
         if (allowedError || !allowed) {
@@ -80,13 +84,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         let { data: existingUser } = await supabase
           .from("users")
           .select("id, username")
-          .ilike("username", trimmed)
+          .ilike("username", escaped)
           .maybeSingle();
 
         if (!existingUser) {
           const { data: newUser, error: createError } = await supabase
             .from("users")
-            .insert({ username: trimmed })
+            .insert({ username: normalized })
             .select("id, username")
             .single();
 

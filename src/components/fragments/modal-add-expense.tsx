@@ -13,7 +13,9 @@ import {
   type Category,
 } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
-import { CURRENCY_OPTIONS } from "@/utils/format";
+import { CURRENCY_OPTIONS, BASE_CURRENCY } from "@/utils/format";
+import { validateAmount, validateNote } from "@/utils/validation";
+import { convertAmount } from "@/services/exchange-rate";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
 import { Platform, Pressable, StyleSheet, View } from "react-native";
@@ -34,7 +36,7 @@ export default function ModalAddExpense({
   onClose,
   onSave,
 }: ModalAddExpenseProps) {
-  const { currency, colors, categories } = useExpenses();
+  const { currency, colors, categories, rates } = useExpenses();
   const symbol = CURRENCY_OPTIONS[currency]?.symbol || "Rp";
 
   const [amount, setAmount] = useState("");
@@ -71,20 +73,27 @@ export default function ModalAddExpense({
 
   const handleSave = () => {
     setError(null);
-    const raw = amount.replace(/,/g, '.');
-    const amt = parseFloat(raw);
-    if (isNaN(amt) || amt <= 0) {
-      setError("Please enter a valid amount");
+    const amountResult = validateAmount(amount);
+    if (!amountResult.valid) {
+      setError(amountResult.error!);
       return;
     }
-    if (!note.trim()) {
-      setError("Please enter a note");
+    const noteResult = validateNote(note);
+    if (!noteResult.valid) {
+      setError(noteResult.error!);
       return;
     }
+
+    // Convert input amount from display currency to base currency (IDR) for storage
+    const amountInBase =
+      currency === BASE_CURRENCY
+        ? amountResult.value!
+        : convertAmount(amountResult.value!, currency, BASE_CURRENCY, rates);
+
     onSave({
-      amount: amt,
+      amount: amountInBase,
       category: activeCategory,
-      note: note.trim(),
+      note: noteResult.value!,
       date: date.toISOString().slice(0, 10),
     });
     resetForm();
