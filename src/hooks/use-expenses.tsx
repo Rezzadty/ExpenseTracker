@@ -82,6 +82,7 @@ function useExpensesStore() {
     return map;
   }, [categories]);
 
+  // Effect 1: Categories (fetch + seed)
   useEffect(() => {
     let mounted = true;
     const currentUserId = user?.id;
@@ -89,23 +90,17 @@ function useExpensesStore() {
     (async () => {
       if (!user) {
         if (mounted && userIdRef.current === undefined) {
-          setExpenses([]);
           setCategories(DEFAULT_CATEGORIES);
-          await AsyncStorage.removeItem("cached_expenses").catch(console.error);
           await AsyncStorage.removeItem("cached_categories").catch(console.error);
         }
         return;
       }
 
       try {
-        const cachedExp = await AsyncStorage.getItem("cached_expenses");
         const cachedCat = await AsyncStorage.getItem("cached_categories");
-        const cachedCurrency = await AsyncStorage.getItem("cached_currency") as CurrencyCode | null;
 
         if (mounted && userIdRef.current === currentUserId) {
-          if (cachedExp) setExpenses(JSON.parse(cachedExp));
           if (cachedCat) setCategories(JSON.parse(cachedCat));
-          if (cachedCurrency) setDisplayCurrencyState(cachedCurrency);
         }
 
         const catData = await expenseService.fetchCategories(user.id);
@@ -120,6 +115,38 @@ function useExpensesStore() {
               await AsyncStorage.setItem("cached_categories", JSON.stringify(insertedCats)).catch(console.error);
             }
           }
+        }
+      } catch (e) {
+        console.error("Failed to sync categories:", e);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user]);
+
+  // Effect 2: Expenses (fetch)
+  useEffect(() => {
+    let mounted = true;
+    const currentUserId = user?.id;
+
+    (async () => {
+      if (!user) {
+        if (mounted && userIdRef.current === undefined) {
+          setExpenses([]);
+          await AsyncStorage.removeItem("cached_expenses").catch(console.error);
+        }
+        return;
+      }
+
+      try {
+        const cachedExp = await AsyncStorage.getItem("cached_expenses");
+        const cachedCurrency = await AsyncStorage.getItem("cached_currency") as CurrencyCode | null;
+
+        if (mounted && userIdRef.current === currentUserId) {
+          if (cachedExp) setExpenses(JSON.parse(cachedExp));
+          if (cachedCurrency) setDisplayCurrencyState(cachedCurrency);
         }
 
         const expData = await expenseService.fetchExpenses(user.id);
