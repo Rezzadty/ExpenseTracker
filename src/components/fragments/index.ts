@@ -29,9 +29,6 @@ export type { ModalSetBudgetProps } from "./modal-set-budget";
 export { default as ModalConfirmDelete } from "./modal-confirm-delete";
 export type { ModalConfirmDeleteProps } from "./modal-confirm-delete";
 
-export { default as ModalNotification } from "./modal-notification";
-export type { ModalNotificationProps } from "./modal-notification";
-
 export { default as ModalEditCategory } from "./modal-edit-category";
 export type { ModalEditCategoryProps } from "./modal-edit-category";
 
@@ -52,6 +49,4 @@ export type { CardSettingsLogoutProps } from "./card-settings-logout";
 
 export { default as Navbar } from "./navbar";
 export type { NavbarProps } from "./navbar";
-
-export { default as BottomTabBar } from "./bottom-tab-bar";
 

@@ -132,41 +132,26 @@ export const expenseService = {
 
   async updateCategory(userId: string, id: string, cat: Partial<Omit<CategoryItem, "id">>, oldName: string) {
     const newName = cat.name ?? "";
-    const newColor = cat.color ?? "";
+    const newColor = cat.color ?? null;
 
-    if (oldName !== newName) {
-      const { error: expErr } = await supabase
-        .from("expenses")
-        .update({ category: newName })
-        .eq("user_id", userId)
-        .eq("category", oldName);
-      if (expErr) throw expErr;
-    }
+    const { data, error } = await supabase.rpc("rename_category", {
+      p_user_id: userId,
+      p_category_id: id,
+      p_new_name: newName,
+      p_new_color: newColor,
+    });
 
-    const { error: updateErr } = await supabase
-      .from("categories")
-      .update({ name: newName, color: newColor })
-      .eq("id", id)
-      .eq("user_id", userId);
-
-    if (updateErr) throw updateErr;
+    if (error) throw error;
+    // data is [{ id, name, color }] from RETURNS TABLE
+    return data?.[0];
   },
 
   async deleteCategory(userId: string, id: string, categoryName: string) {
-    const { error: expErr } = await supabase
-      .from("expenses")
-      .update({ category: "Other" })
-      .eq("user_id", userId)
-      .eq("category", categoryName);
+    const { error } = await supabase.rpc("delete_category", {
+      p_user_id: userId,
+      p_category_id: id,
+    });
 
-    if (expErr) throw expErr;
-
-    const { error: catErr } = await supabase
-      .from("categories")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", userId);
-
-    if (catErr) throw catErr;
+    if (error) throw error;
   },
 };

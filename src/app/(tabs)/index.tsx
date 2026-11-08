@@ -1,5 +1,5 @@
 // Dashboard screen displaying balance summary, action buttons, category progress, and recent expenses.
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import {
   AnimatedListItem,
   AnimatedScreen,
@@ -25,11 +25,9 @@ import { Fonts, Spacing, Radius } from "@/constants/theme";
 export default function DashboardScreen() {
   const { colors, categories } = useExpenses();
   const {
-    expenses,
     dailyBudget,
     setDailyBudget,
     addExpense,
-    deleteExpense,
     todaySpent,
     byCategory,
     filter,
