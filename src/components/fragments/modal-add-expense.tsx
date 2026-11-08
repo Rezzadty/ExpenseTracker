@@ -14,6 +14,7 @@ import {
 } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
 import { CURRENCY_OPTIONS } from "@/utils/format";
+import { validateAmount, validateNote } from "@/utils/validation";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
 import { Platform, Pressable, StyleSheet, View } from "react-native";
@@ -71,20 +72,20 @@ export default function ModalAddExpense({
 
   const handleSave = () => {
     setError(null);
-    const raw = amount.replace(/,/g, '.');
-    const amt = parseFloat(raw);
-    if (isNaN(amt) || amt <= 0) {
-      setError("Please enter a valid amount");
+    const amountResult = validateAmount(amount);
+    if (!amountResult.valid) {
+      setError(amountResult.error!);
       return;
     }
-    if (!note.trim()) {
-      setError("Please enter a note");
+    const noteResult = validateNote(note);
+    if (!noteResult.valid) {
+      setError(noteResult.error!);
       return;
     }
     onSave({
-      amount: amt,
+      amount: amountResult.value!,
       category: activeCategory,
-      note: note.trim(),
+      note: noteResult.value!,
       date: date.toISOString().slice(0, 10),
     });
     resetForm();

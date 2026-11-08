@@ -14,6 +14,7 @@ import {
 import { useExpenses } from "@/hooks/use-expenses";
 import type { Expense } from "@/types/expense";
 import { CURRENCY_OPTIONS } from "@/utils/format";
+import { validateAmount, validateNote } from "@/utils/validation";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
@@ -50,22 +51,22 @@ function ModalEditForm({
 
   const handleSave = () => {
     setError(null);
-    const raw = amount.replace(/,/g, ".");
-    const amt = parseFloat(raw);
-    if (isNaN(amt) || amt <= 0) {
-      setError("Please enter a valid amount");
+    const amountResult = validateAmount(amount);
+    if (!amountResult.valid) {
+      setError(amountResult.error!);
       return;
     }
-    if (!note.trim()) {
-      setError("Please enter a note");
+    const noteResult = validateNote(note);
+    if (!noteResult.valid) {
+      setError(noteResult.error!);
       return;
     }
 
     onSave({
       id: expense.id,
-      amount: amt,
+      amount: amountResult.value!,
       category,
-      note: note.trim(),
+      note: noteResult.value!,
       date: date.trim() || expense.date,
     });
     onClose();
