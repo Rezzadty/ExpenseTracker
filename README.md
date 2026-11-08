@@ -8,6 +8,7 @@ A personal expense tracking mobile app to help you monitor daily spending, set b
 - **Budget Management**: Set and track daily spending limits with progress status.
 - **Category Customization**: Add, edit, or remove custom expense categories and choose color accents.
 - **Analytics & Trends**: Timeframe filters (Day, Week, Month), category breakdowns, precise SVG donut chart, and trend comparisons.
+- **Period-Aware Outcome Analytics**: Dashboard card shows calendar-month totals (This month / Last month / All time) with empty states; Analytics tab adds month picker with prev/next navigation and change-vs-previous-month indicator.
 - **Currency & Locale**: Multi-currency conversion (IDR, USD, EUR, GBP, JPY) with live API rates and customizable number separators.
 - **Theme & Notifications**: Dark, Light, and System appearance modes with customizable daily reminder schedules.
 - **Expense History**: Category filtering, keyword search, and confirmation modal for deletions.
@@ -101,6 +102,8 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 
 ### Recent Updates
 
+- **Period-Aware Outcome Analytics**: Dashboard card now follows calendar months (This month / Last month / All time chips) with friendly empty states; Analytics tab gains month picker (prev/next arrows bounded by current month and oldest expense) and change-vs-previous-month indicator. Shared `src/utils/period.ts` utilities power both screens for exact parity.
+- **Dashboard Latest Expenses**: Section renamed from "Recent Expenses" to "Latest Expenses" and limited to last 7 days; "View All" navigates to Expenses tab for full history with filters.
 - **SVG Donut Breakdown**: Replaced legacy CSS border rings with `react-native-svg` stroke-dash calculations for accurate multi-slice proportional rendering across all timeframes.
 - **Expense Editing & Dedicated Modal**: Added an Edit button alongside Delete styled with theme-adaptive blue (`#4C85E6` dark / `#1D4ED8` light) opening a centered popup with category chips and balanced 50/50 action buttons.
 - **Supabase Real-Time Updates**: Integrated `updateExpense` with direct PostgreSQL updates maintaining seamless client and server cache parity.
