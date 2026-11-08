@@ -20,15 +20,17 @@ import { useDashboard } from "@/hooks/use-dashboard";
 import { useExpenses } from "@/hooks/use-expenses";
 import { usePeriodTotals } from "@/hooks/use-period-totals";
 import { useToday } from "@/hooks/use-today";
-import { getPeriodRange, shiftPeriod } from "@/utils/period";
+import { getPeriodRange, shiftPeriod, isWithinDays } from "@/utils/period";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Fonts, Spacing, Radius } from "@/constants/theme";
+import { useRouter } from "expo-router";
 
 type PeriodScope = "this" | "last" | "all";
 
 export default function DashboardScreen() {
   const { colors, categories } = useExpenses();
+  const router = useRouter();
   const today = useToday();
   const {
     dailyBudget,
@@ -37,8 +39,6 @@ export default function DashboardScreen() {
     todaySpent,
     filter,
     setFilter,
-    expanded,
-    setExpanded,
     showAddExpense,
     setShowAddExpense,
     showBudget,
@@ -68,6 +68,12 @@ export default function DashboardScreen() {
   ];
 
   const headerLabel = periodScope === "all" ? "OUTCOME ANALYTICS · ALL TIME" : `OUTCOME ANALYTICS · ${activeRange!.label}`;
+
+  // Only show expenses from last 7 days on Dashboard
+  const recentVisible = useMemo(
+    () => visible.filter((e) => isWithinDays(e.date, 7)),
+    [visible],
+  );
 
   return (
     <ThemedView style={styles.container}>
@@ -174,28 +180,28 @@ export default function DashboardScreen() {
               color="textSecondary"
               style={{ marginBottom: Spacing.md }}
             >
-              Recent Expenses
+              Latest Expenses
             </ThemedText>
 
-            {visible.length === 0 ? (
+            {recentVisible.length === 0 ? (
               <View
                 style={{ paddingVertical: Spacing.xxl, alignItems: "center" }}
               >
                 <ThemedText type="body" color="textMuted">
-                  No expenses found
+                  No expenses in the last 7 days
                 </ThemedText>
               </View>
             ) : (
               <>
-                {visible.map((item, i) => (
+                {recentVisible.map((item, i) => (
                   <AnimatedListItem key={item.id} index={i}>
                     <CardExpenseItem item={item} />
                   </AnimatedListItem>
                 ))}
-                {filtered.length > 4 && (
+                {filtered.length > recentVisible.length && (
                   <Pressable
                     style={[styles.seeAllBtn, { backgroundColor: colors.surface }]}
-                    onPress={() => setExpanded((v) => !v)}
+                    onPress={() => router.push("/(tabs)/expenses")}
                   >
                     <ThemedText
                       type="body"
@@ -205,7 +211,7 @@ export default function DashboardScreen() {
                         fontWeight: "600",
                       }}
                     >
-                      {expanded ? "Show Less" : `See All (${filtered.length})`}
+                      View All ({filtered.length})
                     </ThemedText>
                   </Pressable>
                 )}

@@ -40,3 +40,11 @@ export function shiftPeriod(range: PeriodRange, delta: number): PeriodRange {
 export function isInPeriod(dateString: string, range: PeriodRange): boolean {
   return dateString >= range.start && dateString < range.endExclusive;
 }
+
+export function isWithinDays(dateString: string, days: number): boolean {
+  const today = new Date();
+  const cutoff = new Date(today);
+  cutoff.setDate(cutoff.getDate() - days);
+  const cutoffStr = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, "0")}-${String(cutoff.getDate()).padStart(2, "0")}`;
+  return dateString >= cutoffStr;
+}
