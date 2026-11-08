@@ -26,10 +26,20 @@ function getDailyTrend(expenses: Expense[], days: number = 7): BarData[] {
 }
 
 function getMonthlyTrend(expenses: Expense[]): BarData[] {
-  const today = new Date();
-  const currentYear = today.getFullYear();
-  const currentMonth = today.getMonth();
-  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  if (expenses.length === 0) {
+    return [
+      { label: "W1", amount: 0 },
+      { label: "W2", amount: 0 },
+      { label: "W3", amount: 0 },
+      { label: "W4", amount: 0 },
+    ];
+  }
+
+  // Determine year/month from first expense (all expenses are from same period)
+  const firstDate = expenses[0].date;
+  const year = parseInt(firstDate.slice(0, 4), 10);
+  const month = parseInt(firstDate.slice(5, 7), 10);
+  const daysInMonth = new Date(year, month, 0).getDate();
 
   const weeks: BarData[] = [
     { label: "W1", amount: 0 },
@@ -38,10 +48,7 @@ function getMonthlyTrend(expenses: Expense[]): BarData[] {
     { label: "W4", amount: 0 },
   ];
 
-  const monthPrefix = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}`;
-
   for (const exp of expenses) {
-    if (!exp.date.startsWith(monthPrefix)) continue;
     const day = parseInt(exp.date.slice(8, 10), 10);
     if (day <= 7) weeks[0].amount += exp.amount;
     else if (day <= 14) weeks[1].amount += exp.amount;
