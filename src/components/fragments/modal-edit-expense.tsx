@@ -13,8 +13,9 @@ import {
 } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
 import type { Expense } from "@/types/expense";
-import { CURRENCY_OPTIONS } from "@/utils/format";
+import { CURRENCY_OPTIONS, BASE_CURRENCY } from "@/utils/format";
 import { validateAmount, validateNote } from "@/utils/validation";
+import { convertAmount } from "@/services/exchange-rate";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
@@ -40,10 +41,15 @@ function ModalEditForm({
   onClose: () => void;
   onSave: ModalEditExpenseProps["onSave"];
 }) {
-  const { currency, colors, categories } = useExpenses();
+  const { currency, colors, categories, rates } = useExpenses();
   const symbol = CURRENCY_OPTIONS[currency]?.symbol || "Rp";
 
-  const [amount, setAmount] = useState(expense.amount.toString());
+  // Convert stored base-currency amount to display currency for editing
+  const initialDisplayAmount =
+    currency === BASE_CURRENCY
+      ? expense.amount
+      : convertAmount(expense.amount, BASE_CURRENCY, currency, rates);
+  const [amount, setAmount] = useState(initialDisplayAmount.toString());
   const [note, setNote] = useState(expense.note);
   const [date, setDate] = useState(expense.date);
   const [category, setCategory] = useState<Category>(expense.category);
@@ -62,9 +68,15 @@ function ModalEditForm({
       return;
     }
 
+    // Convert input amount from display currency to base currency (IDR) for storage
+    const amountInBase =
+      currency === BASE_CURRENCY
+        ? amountResult.value!
+        : convertAmount(amountResult.value!, currency, BASE_CURRENCY, rates);
+
     onSave({
       id: expense.id,
-      amount: amountResult.value!,
+      amount: amountInBase,
       category,
       note: noteResult.value!,
       date: date.trim() || expense.date,
