@@ -41,10 +41,22 @@ export function isInPeriod(dateString: string, range: PeriodRange): boolean {
   return dateString >= range.start && dateString < range.endExclusive;
 }
 
-export function isWithinDays(dateString: string, days: number): boolean {
-  const today = new Date();
-  const cutoff = new Date(today);
+export function toLocalDateString(d: Date = new Date()): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+export function parseLocalDate(dateString: string): Date {
+  const [y, m, d] = dateString.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+export function isWithinDays(dateString: string, days: number, today = toLocalDateString()): boolean {
+  const todayDate = parseLocalDate(today);
+  const cutoff = new Date(todayDate);
   cutoff.setDate(cutoff.getDate() - days);
-  const cutoffStr = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, "0")}-${String(cutoff.getDate()).padStart(2, "0")}`;
+  const cutoffStr = toLocalDateString(cutoff);
   return dateString >= cutoffStr;
 }

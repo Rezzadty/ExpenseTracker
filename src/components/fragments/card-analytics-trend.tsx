@@ -6,6 +6,7 @@ import { useExpenses } from "@/hooks/use-expenses";
 import type { Expense } from "@/types/expense";
 import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
+import { toLocalDateString } from "@/utils/period";
 
 type BarData = { label: string; amount: number };
 
@@ -15,7 +16,7 @@ function getDailyTrend(expenses: Expense[], days: number = 7): BarData[] {
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0, 10);
+    const key = toLocalDateString(d);
     const label = d.toLocaleDateString("en-US", { weekday: "short" });
     const amount = expenses
       .filter((e) => e.date === key)

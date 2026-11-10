@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import type { Category } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
 import { useToday } from "@/hooks/use-today";
-import { getPeriodRange, shiftPeriod, isInPeriod } from "@/utils/period";
+import { getPeriodRange, shiftPeriod, isInPeriod, parseLocalDate, toLocalDateString } from "@/utils/period";
 
 export type Timeframe = "daily" | "weekly" | "monthly";
 
@@ -24,10 +24,10 @@ export function useAnalytics() {
     }
 
     if (timeframe === "weekly") {
-      const todayDate = new Date(today + "T00:00:00");
+      const todayDate = parseLocalDate(today);
       const weekAgo = new Date(todayDate);
       weekAgo.setDate(weekAgo.getDate() - 6);
-      const weekAgoStr = weekAgo.toISOString().slice(0, 10);
+      const weekAgoStr = toLocalDateString(weekAgo);
       return expenses.filter((e) => e.date >= weekAgoStr && e.date <= today);
     }
 
