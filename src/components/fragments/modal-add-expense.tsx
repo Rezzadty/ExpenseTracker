@@ -16,6 +16,7 @@ import { useExpenses } from "@/hooks/use-expenses";
 import { CURRENCY_OPTIONS, BASE_CURRENCY } from "@/utils/format";
 import { validateAmount, validateNote } from "@/utils/validation";
 import { convertAmount } from "@/services/exchange-rate";
+import { toLocalDateString } from "@/utils/period";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
 import { Platform, Pressable, StyleSheet, View } from "react-native";
@@ -94,7 +95,7 @@ export default function ModalAddExpense({
       amount: amountInBase,
       category: activeCategory,
       note: noteResult.value!,
-      date: date.toISOString().slice(0, 10),
+      date: toLocalDateString(date),
     });
     resetForm();
     onClose();

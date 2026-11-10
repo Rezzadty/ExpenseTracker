@@ -1,5 +1,5 @@
 // Dashboard screen displaying balance summary, action buttons, category progress, and recent expenses.
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   AnimatedListItem,
   AnimatedScreen,
@@ -18,32 +18,62 @@ import {
 } from "@/components/fragments";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { useExpenses } from "@/hooks/use-expenses";
+import { usePeriodTotals } from "@/hooks/use-period-totals";
+import { useToday } from "@/hooks/use-today";
+import { getPeriodRange, shiftPeriod, isWithinDays } from "@/utils/period";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Fonts, Spacing, Radius } from "@/constants/theme";
+import { useRouter } from "expo-router";
+
+type PeriodScope = "this" | "last" | "all";
 
 export default function DashboardScreen() {
   const { colors, categories } = useExpenses();
+  const router = useRouter();
+  const today = useToday();
   const {
     dailyBudget,
     setDailyBudget,
     addExpense,
     todaySpent,
-    byCategory,
     filter,
     setFilter,
-    expanded,
-    setExpanded,
     showAddExpense,
     setShowAddExpense,
     showBudget,
     setShowBudget,
-    maxCategory,
     filtered,
     visible,
   } = useDashboard();
 
+  const [periodScope, setPeriodScope] = useState<PeriodScope>("this");
+
+  const currentRange = getPeriodRange(today);
+  const lastMonthRange = shiftPeriod(currentRange, -1);
+  const activeRange = periodScope === "this" ? currentRange : periodScope === "last" ? lastMonthRange : null;
+
+  const { byCategory } = usePeriodTotals(activeRange);
+  const maxCategory = useMemo(() => {
+    const values = Object.values(byCategory).filter((v): v is number => typeof v === "number");
+    return values.length > 0 ? Math.max(...values) : 0;
+  }, [byCategory]);
+
   const filterOptions = useMemo(() => ["All", ...categories.map((c) => c.name)], [categories]);
+
+  const periodChips: { label: string; value: PeriodScope }[] = [
+    { label: "This month", value: "this" },
+    { label: "Last month", value: "last" },
+    { label: "All time", value: "all" },
+  ];
+
+  const headerLabel = periodScope === "all" ? "OUTCOME ANALYTICS · ALL TIME" : `OUTCOME ANALYTICS · ${activeRange!.label}`;
+
+  // Only show expenses from last 7 days on Dashboard
+  const recentVisible = useMemo(
+    () => visible.filter((e) => isWithinDays(e.date, 7)),
+    [visible],
+  );
 
   return (
     <ThemedView style={styles.container}>
@@ -101,22 +131,36 @@ export default function DashboardScreen() {
             </View>
 
             <ThemedView surface="surface" style={styles.card}>
-              <ThemedText
-                type="sectionTitle"
-                color="textSecondary"
-                style={{ marginBottom: Spacing.base }}
-              >
-                Outcome Analytics
-              </ThemedText>
-              {(Object.entries(byCategory) as [string, number][]).map(
-                ([cat, amt]) => (
+              <View style={styles.analyticsHeader}>
+                <ThemedText type="sectionTitle" color="textSecondary">
+                  {headerLabel}
+                </ThemedText>
+                <View style={styles.periodChipRow}>
+                  {periodChips.map((c) => (
+                    <Chip
+                      key={c.value}
+                      label={c.label}
+                      selected={periodScope === c.value}
+                      onPress={() => setPeriodScope(c.value)}
+                    />
+                  ))}
+                </View>
+              </View>
+              {Object.keys(byCategory).length === 0 ? (
+                <View style={styles.emptyState}>
+                  <ThemedText type="body" color="textMuted">
+                    No expenses for this period
+                  </ThemedText>
+                </View>
+              ) : (
+                (Object.entries(byCategory) as [string, number][]).map(([cat, amt]) => (
                   <CardCategoryProgress
                     key={cat}
                     category={cat as any}
                     amount={amt}
                     max={maxCategory}
                   />
-                ),
+                ))
               )}
             </ThemedView>
 
@@ -136,28 +180,28 @@ export default function DashboardScreen() {
               color="textSecondary"
               style={{ marginBottom: Spacing.md }}
             >
-              Recent Expenses
+              Latest Expenses
             </ThemedText>
 
-            {visible.length === 0 ? (
+            {recentVisible.length === 0 ? (
               <View
                 style={{ paddingVertical: Spacing.xxl, alignItems: "center" }}
               >
                 <ThemedText type="body" color="textMuted">
-                  No expenses found
+                  No expenses in the last 7 days
                 </ThemedText>
               </View>
             ) : (
               <>
-                {visible.map((item, i) => (
+                {recentVisible.map((item, i) => (
                   <AnimatedListItem key={item.id} index={i}>
                     <CardExpenseItem item={item} />
                   </AnimatedListItem>
                 ))}
-                {filtered.length > 4 && (
+                {filtered.length > recentVisible.length && (
                   <Pressable
                     style={[styles.seeAllBtn, { backgroundColor: colors.surface }]}
-                    onPress={() => setExpanded((v) => !v)}
+                    onPress={() => router.push("/(tabs)/expenses")}
                   >
                     <ThemedText
                       type="body"
@@ -167,7 +211,7 @@ export default function DashboardScreen() {
                         fontWeight: "600",
                       }}
                     >
-                      {expanded ? "Show Less" : `See All (${filtered.length})`}
+                      View All ({filtered.length})
                     </ThemedText>
                   </Pressable>
                 )}
@@ -223,6 +267,22 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: Spacing.sm,
     marginBottom: Spacing.xl,
+  },
+  analyticsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: Spacing.md,
+    flexWrap: "wrap",
+    gap: Spacing.sm,
+  },
+  periodChipRow: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+  },
+  emptyState: {
+    paddingVertical: Spacing.xl,
+    alignItems: "center",
   },
   seeAllBtn: {
     alignItems: "center",
