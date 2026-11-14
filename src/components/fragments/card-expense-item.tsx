@@ -45,9 +45,9 @@ export default function CardExpenseItem({
         </ThemedText>
       </View>
       <View style={{ flex: 1, marginLeft: Spacing.md }}>
-        <ThemedText type="body">{item.note}</ThemedText>
+        <ThemedText type="body">{item.note || item.category}</ThemedText>
         <ThemedText type="caption" color="textMuted">
-          {item.date}
+          {item.note ? `${item.category} • ${item.date}` : item.date}
         </ThemedText>
       </View>
       <View

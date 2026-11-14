@@ -9,13 +9,18 @@ import {
   CardAnalyticsDonut,
   CardAnalyticsTrend,
   CardCategoryProgress,
+  CardExpenseItem,
   Navbar,
 } from "@/components/fragments";
 import { Radius, Spacing, Fonts, type Category } from "@/constants/theme";
 import { useAnalytics, type Timeframe } from "@/hooks/use-analytics";
 import { useExpenses } from "@/hooks/use-expenses";
+import { formatHeaderDate } from "@/utils/period";
+import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+const PAGE_SIZE = 10;
 
 const TIMEFRAMES: { label: string; value: Timeframe }[] = [
   { label: "Daily", value: "daily" },
@@ -56,13 +61,24 @@ export default function AnalyticsScreen() {
     maxCategory,
   } = useAnalytics();
 
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
   const isMonthly = timeframe === "monthly";
   const periodLabel = isMonthly && periodKey
     ? formatMonthKey(periodKey)
     : PERIOD_LABELS[timeframe];
 
+  const handleSelectTimeframe = (value: Timeframe) => {
+    setTimeframe(value);
+    setSelectedCategory(null);
+    setVisibleCount(PAGE_SIZE);
+  };
+
   const handlePrevMonth = () => {
     if (!periodKey || !canGoPrev) return;
+    setSelectedCategory(null);
+    setVisibleCount(PAGE_SIZE);
     const [year, month] = periodKey.split("-").map(Number);
     const date = new Date(year, month - 2, 1); // previous month
     setPeriodKey(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`);
@@ -70,10 +86,49 @@ export default function AnalyticsScreen() {
 
   const handleNextMonth = () => {
     if (!periodKey || !canGoNext) return;
+    setSelectedCategory(null);
+    setVisibleCount(PAGE_SIZE);
     const [year, month] = periodKey.split("-").map(Number);
     const date = new Date(year, month, 1); // next month
     setPeriodKey(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`);
   };
+
+  const handleToggleCategory = (cat: Category) => {
+    setSelectedCategory((prev) => (prev === cat ? null : cat));
+    setVisibleCount(PAGE_SIZE);
+  };
+
+  const transactions = useMemo(() => {
+    const list = selectedCategory
+      ? filteredExpenses.filter((e) => e.category === selectedCategory)
+      : filteredExpenses;
+    return [...list].sort((a, b) => b.date.localeCompare(a.date));
+  }, [filteredExpenses, selectedCategory]);
+
+  const visibleTransactions = useMemo(() => {
+    return transactions.slice(0, visibleCount);
+  }, [transactions, visibleCount]);
+
+  const groupedTransactions = useMemo(() => {
+    if (timeframe === "daily") return [];
+    const groups: { date: string; formattedDate: string; items: typeof visibleTransactions }[] = [];
+    const map = new Map<string, typeof visibleTransactions>();
+
+    for (const item of visibleTransactions) {
+      let group = map.get(item.date);
+      if (!group) {
+        group = [];
+        map.set(item.date, group);
+        groups.push({
+          date: item.date,
+          formattedDate: formatHeaderDate(item.date),
+          items: group,
+        });
+      }
+      group.push(item);
+    }
+    return groups;
+  }, [visibleTransactions, timeframe]);
 
   const getChangeColorKey = (pct: number) => (pct >= 0 ? "accent" : "danger");
   const getChangePrefix = (pct: number) => (pct >= 0 ? "+" : "");
@@ -93,7 +148,7 @@ export default function AnalyticsScreen() {
                   key={t.value}
                   label={t.label}
                   selected={timeframe === t.value}
-                  onPress={() => setTimeframe(t.value)}
+                  onPress={() => handleSelectTimeframe(t.value)}
                 />
               ))}
             </View>
@@ -184,7 +239,12 @@ export default function AnalyticsScreen() {
                   </ThemedText>
                 </View>
               ) : (
-                <CardAnalyticsDonut data={slices} total={totalSpent} />
+                <CardAnalyticsDonut
+                  data={slices}
+                  total={totalSpent}
+                  selectedCategory={selectedCategory}
+                  onSelectCategory={handleToggleCategory}
+                />
               )}
             </ThemedView>
 
@@ -210,9 +270,74 @@ export default function AnalyticsScreen() {
                       category={cat}
                       amount={amt}
                       max={maxCategory}
+                      selected={selectedCategory === cat}
+                      onPress={() => handleToggleCategory(cat)}
                     />
                   ),
                 )
+              )}
+            </ThemedView>
+
+            <ThemedView surface="surface" style={styles.card}>
+              <View style={styles.transactionsHeader}>
+                <ThemedText type="sectionTitle" color="textSecondary">
+                  Transactions
+                </ThemedText>
+                {selectedCategory && (
+                  <Chip
+                    label={`${selectedCategory} ✕`}
+                    selected
+                    onPress={() => setSelectedCategory(null)}
+                  />
+                )}
+              </View>
+
+              {transactions.length === 0 ? (
+                <View style={styles.empty}>
+                  <ThemedText type="body" color="textMuted">
+                    No transactions in this period
+                  </ThemedText>
+                </View>
+              ) : timeframe === "daily" ? (
+                visibleTransactions.map((item) => (
+                  <CardExpenseItem key={item.id} item={item} />
+                ))
+              ) : (
+                groupedTransactions.map((group) => (
+                  <View key={group.date} style={styles.dateGroup}>
+                    <ThemedText
+                      type="caption"
+                      color="textSecondary"
+                      style={styles.dateHeader}
+                    >
+                      {group.formattedDate}
+                    </ThemedText>
+                    {group.items.map((item) => (
+                      <CardExpenseItem key={item.id} item={item} />
+                    ))}
+                  </View>
+                ))
+              )}
+
+              {transactions.length > visibleCount && (
+                <Pressable
+                  style={[
+                    styles.seeAllBtn,
+                    { backgroundColor: colors.surfaceRaised },
+                  ]}
+                  onPress={() => setVisibleCount((v) => v + PAGE_SIZE)}
+                >
+                  <ThemedText
+                    type="body"
+                    color="accent"
+                    style={{
+                      fontFamily: Fonts.sansSemiBold,
+                      fontWeight: "600",
+                    }}
+                  >
+                    Show more ({transactions.length - visibleCount} remaining)
+                  </ThemedText>
+                </Pressable>
               )}
             </ThemedView>
 
@@ -281,5 +406,26 @@ const styles = StyleSheet.create({
   empty: {
     paddingVertical: Spacing.lg,
     alignItems: "center",
+  },
+  transactionsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: Spacing.base,
+  },
+  dateGroup: {
+    marginBottom: Spacing.sm,
+  },
+  dateHeader: {
+    fontFamily: Fonts.sansSemiBold,
+    fontWeight: "600",
+    marginBottom: Spacing.xs,
+    marginTop: Spacing.xs,
+  },
+  seeAllBtn: {
+    alignItems: "center",
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.chip,
+    marginTop: Spacing.sm,
   },
 });

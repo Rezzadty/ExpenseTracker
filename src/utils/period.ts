@@ -60,3 +60,39 @@ export function isWithinDays(dateString: string, days: number, today = toLocalDa
   const cutoffStr = toLocalDateString(cutoff);
   return dateString >= cutoffStr;
 }
+
+export function filterExpensesByTimeframe<T extends { date: string }>(
+  items: T[],
+  timeframe: "daily" | "weekly" | "monthly",
+  today: string,
+  monthlyRange: PeriodRange | null,
+): T[] {
+  if (timeframe === "daily") {
+    return items.filter((e) => e.date === today);
+  }
+
+  if (timeframe === "weekly") {
+    const todayDate = parseLocalDate(today);
+    const weekAgo = new Date(todayDate);
+    weekAgo.setDate(weekAgo.getDate() - 6);
+    const weekAgoStr = toLocalDateString(weekAgo);
+    return items.filter((e) => e.date >= weekAgoStr && e.date <= today);
+  }
+
+  if (monthlyRange) {
+    return items.filter((e) => isInPeriod(e.date, monthlyRange));
+  }
+
+  return items;
+}
+
+const MONTH_NAMES_SHORT = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+export function formatHeaderDate(dateString: string): string {
+  const [year, month, day] = dateString.split("-").map(Number);
+  if (!year || !month || !day || month < 1 || month > 12) return dateString;
+  return `${day} ${MONTH_NAMES_SHORT[month - 1]} ${year}`;
+}
