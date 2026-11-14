@@ -1,4 +1,5 @@
 import { Spacing } from "@/constants/theme";
+import { useExpenses } from "@/hooks/use-expenses";
 import { BlurView } from "expo-blur";
 import { useEffect, useState, type PropsWithChildren } from "react";
 import { Modal, Pressable, StyleSheet, View } from "react-native";
@@ -31,6 +32,7 @@ export default function AnimatedModal({
   onClose,
   children,
 }: AnimatedModalProps) {
+  const { isDark } = useExpenses();
   const [mounted, setMounted] = useState(visible);
   const progress = useSharedValue(visible ? 1 : 0);
 
@@ -72,8 +74,18 @@ export default function AnimatedModal({
       onRequestClose={onClose}
     >
       <View style={styles.wrapper}>
-        <Animated.View style={[styles.overlay, overlayStyle]}>
-          <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
+        <Animated.View
+          style={[
+            styles.overlay,
+            { backgroundColor: isDark ? "rgba(0,0,0,0.5)" : "rgba(0,0,0,0.25)" },
+            overlayStyle,
+          ]}
+        >
+          <BlurView
+            intensity={40}
+            tint={isDark ? "dark" : "light"}
+            style={StyleSheet.absoluteFill}
+          />
           <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         </Animated.View>
         <Animated.View style={[styles.content, contentStyle]}>
@@ -93,7 +105,6 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: "rgba(0,0,0,0.5)",
   },
   content: {
     width: "100%",

@@ -103,7 +103,12 @@ export default function ModalAddExpense({
 
   return (
     <AnimatedModal visible={visible} onClose={handleClose}>
-      <View style={[styles.content, { backgroundColor: colors.surface }]}>
+      <View
+        style={[
+          styles.content,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+        ]}
+      >
         <View style={styles.header}>
           <ThemedText
             type="body"
@@ -175,7 +180,10 @@ export default function ModalAddExpense({
            Date
          </ThemedText>
          <Pressable
-           style={[styles.dateBtn, { backgroundColor: colors.surface }]}
+           style={[
+             styles.dateBtn,
+             { backgroundColor: colors.surface, borderColor: colors.border },
+           ]}
            onPress={() => setShowDatePicker(true)}
          >
            <ThemedText type="body" color="textPrimary">
@@ -228,6 +236,7 @@ const styles = StyleSheet.create({
   content: {
     borderRadius: Radius.card,
     padding: Spacing.lg,
+    borderWidth: 1,
   },
   header: {
     flexDirection: "row",
@@ -240,7 +249,6 @@ const styles = StyleSheet.create({
     borderRadius: Radius.button,
     marginBottom: Spacing.base,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
     alignItems: "center",
   },
   chipRow: {

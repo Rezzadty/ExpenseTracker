@@ -36,25 +36,24 @@ export const DarkColors: ColorTheme = {
 };
 
 export const LightColors: ColorTheme = {
-  background: "#F5F8F6",
+  background: "#F2F5F3",
   surface: "#FFFFFF",
-  surfaceRaised: "#EDF3F0",
-  border: "#CAD6D0",
-  textPrimary: "#0F1715",
-  textSecondary: "#52605B",
-  textMuted: "#8C9B95",
-  accent: "#00B386",
-  accentSoft: "rgba(0,179,134,0.12)",
+  surfaceRaised: "#E8EFEA",
+  border: "#D1DCD6",
+  textPrimary: "#0D1412",
+  textSecondary: "#45544E",
+  textMuted: "#667770",
+  accent: "#008765",
+  accentSoft: "rgba(0,135,101,0.12)",
   textOnAccent: "#FFFFFF",
-  danger: "#E54848",
-  warning: "#D97706",
-  track: "rgba(0,0,0,0.08)",
+  danger: "#D93838",
+  warning: "#C26200",
+  track: "rgba(0,0,0,0.06)",
   edit: "#1D4ED8",
 };
 
 // Default export is dark colors for backwards-compatibility
 export const Colors = DarkColors;
-
 
 // Per-category accent colors — default presets used in chips, bars, badges.
 export const DEFAULT_CATEGORY_COLORS: Record<string, string> = {
@@ -65,6 +64,16 @@ export const DEFAULT_CATEGORY_COLORS: Record<string, string> = {
   Bills: "#B197FC",
   Fun: "#FF8A7A",
   Other: "#9AA6A1",
+};
+
+export const LIGHT_CATEGORY_COLORS: Record<string, string> = {
+  Food: "#D97706",
+  Transport: "#0284C7",
+  Shopping: "#DB2777",
+  Health: "#16A34A",
+  Bills: "#7C3AED",
+  Fun: "#EA580C",
+  Other: "#64748B",
 };
 
 export const CategoryColors = DEFAULT_CATEGORY_COLORS;

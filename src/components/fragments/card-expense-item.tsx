@@ -29,7 +29,16 @@ export default function CardExpenseItem({
   const hasActions = Boolean(onEdit || onDelete);
 
   return (
-    <View style={[styles.expenseRow, { backgroundColor: colors.surface }]}>
+    <View
+      style={[
+        styles.expenseRow,
+        {
+          backgroundColor: colors.surface,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+      ]}
+    >
       <View
         style={[styles.categoryBadge, { backgroundColor: catColor + "20" }]}
       >

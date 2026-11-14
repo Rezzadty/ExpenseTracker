@@ -5,6 +5,7 @@ import {
   DarkColors,
   DEFAULT_CATEGORIES,
   DEFAULT_CATEGORY_COLORS,
+  LIGHT_CATEGORY_COLORS,
   LightColors,
 } from "@/constants/theme";
 import {
@@ -72,14 +73,6 @@ function useExpensesStore() {
   const categoriesRef = useRef(categories);
   useEffect(() => {
     categoriesRef.current = categories;
-  }, [categories]);
-
-  const categoryColorMap = useMemo(() => {
-    const map: Record<string, string> = { ...DEFAULT_CATEGORY_COLORS };
-    for (const c of categories) {
-      map[c.name] = c.color;
-    }
-    return map;
   }, [categories]);
 
   // Effect 1: Categories (fetch + seed)
@@ -238,6 +231,16 @@ function useExpensesStore() {
   const colors: ColorTheme = useMemo(() => {
     return isDark ? DarkColors : LightColors;
   }, [isDark]);
+
+  const categoryColorMap = useMemo(() => {
+    const defaults = isDark ? DEFAULT_CATEGORY_COLORS : LIGHT_CATEGORY_COLORS;
+    const map: Record<string, string> = { ...defaults };
+    for (const c of categories) {
+      const isDefault = Object.values(DEFAULT_CATEGORY_COLORS).includes(c.color);
+      map[c.name] = isDefault && !isDark ? (LIGHT_CATEGORY_COLORS[c.name] ?? c.color) : c.color;
+    }
+    return map;
+  }, [categories, isDark]);
 
   useEffect(() => {
     let mounted = true;

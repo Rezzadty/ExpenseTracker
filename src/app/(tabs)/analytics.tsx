@@ -158,7 +158,10 @@ export default function AnalyticsScreen() {
                 <Pressable
                   style={[
                     styles.monthNavBtn,
-                    { backgroundColor: canGoPrev ? colors.surface : colors.surfaceRaised },
+                    {
+                      backgroundColor: canGoPrev ? colors.surface : colors.surfaceRaised,
+                      borderColor: canGoPrev ? colors.border : "transparent",
+                    },
                   ]}
                   onPress={handlePrevMonth}
                   disabled={!canGoPrev}
@@ -178,7 +181,10 @@ export default function AnalyticsScreen() {
                 <Pressable
                   style={[
                     styles.monthNavBtn,
-                    { backgroundColor: canGoNext ? colors.surface : colors.surfaceRaised },
+                    {
+                      backgroundColor: canGoNext ? colors.surface : colors.surfaceRaised,
+                      borderColor: canGoNext ? colors.border : "transparent",
+                    },
                   ]}
                   onPress={handleNextMonth}
                   disabled={!canGoNext}
@@ -191,7 +197,7 @@ export default function AnalyticsScreen() {
               </View>
             )}
 
-            <View style={[styles.totalCard, { backgroundColor: colors.surface }]}>
+            <View style={[styles.totalCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <ThemedText type="sectionTitle" color="textSecondary">
                 {periodLabel}
               </ThemedText>
@@ -224,7 +230,7 @@ export default function AnalyticsScreen() {
               )}
             </View>
 
-            <ThemedView surface="surface" style={styles.card}>
+            <ThemedView surface="surface" style={[styles.card, { borderColor: colors.border }]}>
               <ThemedText
                 type="sectionTitle"
                 color="textSecondary"
@@ -248,7 +254,7 @@ export default function AnalyticsScreen() {
               )}
             </ThemedView>
 
-            <ThemedView surface="surface" style={styles.card}>
+            <ThemedView surface="surface" style={[styles.card, { borderColor: colors.border }]}>
               <ThemedText
                 type="sectionTitle"
                 color="textSecondary"
@@ -278,7 +284,7 @@ export default function AnalyticsScreen() {
               )}
             </ThemedView>
 
-            <ThemedView surface="surface" style={styles.card}>
+            <ThemedView surface="surface" style={[styles.card, { borderColor: colors.border }]}>
               <View style={styles.transactionsHeader}>
                 <ThemedText type="sectionTitle" color="textSecondary">
                   Transactions
@@ -323,7 +329,7 @@ export default function AnalyticsScreen() {
                 <Pressable
                   style={[
                     styles.seeAllBtn,
-                    { backgroundColor: colors.surfaceRaised },
+                    { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderWidth: 1 },
                   ]}
                   onPress={() => setVisibleCount((v) => v + PAGE_SIZE)}
                 >
@@ -342,7 +348,7 @@ export default function AnalyticsScreen() {
             </ThemedView>
 
             {timeframe !== "daily" && (
-              <ThemedView surface="surface" style={styles.card}>
+              <ThemedView surface="surface" style={[styles.card, { borderColor: colors.border }]}>
                 <ThemedText
                   type="sectionTitle"
                   color="textSecondary"
@@ -396,12 +402,14 @@ const styles = StyleSheet.create({
     borderRadius: Radius.card,
     padding: Spacing.lg,
     marginBottom: Spacing.xl,
+    borderWidth: 1,
     boxShadow: "0px 8px 16px rgba(0,0,0,0.15)",
   },
   card: {
     borderRadius: Radius.card,
     padding: Spacing.lg,
     marginBottom: Spacing.xl,
+    borderWidth: 1,
   },
   empty: {
     paddingVertical: Spacing.lg,

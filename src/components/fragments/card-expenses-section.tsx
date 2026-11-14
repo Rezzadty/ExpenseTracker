@@ -31,7 +31,7 @@ export default function CardExpensesSection({
   onDelete,
   onEdit,
 }: CardExpensesSectionProps) {
-  const { formatAmount, categories, updateExpense } = useExpenses();
+  const { formatAmount, categories, updateExpense, colors } = useExpenses();
   const [filter, setFilter] = useState<"All" | Category>("All");
   const [search, setSearch] = useState("");
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -83,7 +83,10 @@ export default function CardExpensesSection({
 
   return (
     <>
-      <ThemedView surface="surface" style={styles.summaryCard}>
+      <ThemedView
+        surface="surface"
+        style={[styles.summaryCard, { borderColor: colors.border }]}
+      >
         <ThemedText type="caption" color="textSecondary">
           {filtered.length} transaction{filtered.length !== 1 ? "s" : ""}
         </ThemedText>
@@ -160,6 +163,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.card,
     padding: Spacing.lg,
     marginBottom: Spacing.base,
+    borderWidth: 1,
   },
   chipRow: {
     flexDirection: "row",

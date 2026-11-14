@@ -107,7 +107,7 @@ export default function DashboardScreen() {
               </Button>
             </View>
 
-            <ThemedView surface="surface" style={styles.card}>
+            <ThemedView surface="surface" style={[styles.card, { borderColor: colors.border }]}>
               <ThemedText
                 type="sectionTitle"
                 color="textSecondary"
@@ -159,6 +159,8 @@ export default function DashboardScreen() {
                       styles.seeAllBtn,
                       {
                         backgroundColor: colors.surfaceRaised,
+                        borderColor: colors.border,
+                        borderWidth: 1,
                         marginTop: Spacing.md,
                         paddingHorizontal: Spacing.lg,
                       },
@@ -189,7 +191,11 @@ export default function DashboardScreen() {
                   <Pressable
                     style={[
                       styles.seeAllBtn,
-                      { backgroundColor: colors.surface },
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                        borderWidth: 1,
+                      },
                     ]}
                     onPress={() => setExpanded((v) => !v)}
                   >
@@ -211,6 +217,8 @@ export default function DashboardScreen() {
                       styles.seeAllBtn,
                       {
                         backgroundColor: colors.surfaceRaised,
+                        borderColor: colors.border,
+                        borderWidth: 1,
                         marginTop: Spacing.sm,
                       },
                     ]}
@@ -274,6 +282,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.card,
     padding: Spacing.lg,
     marginBottom: Spacing.xl,
+    borderWidth: 1,
   },
   chipRow: {
     flexDirection: "row",
