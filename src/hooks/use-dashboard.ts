@@ -1,5 +1,6 @@
 import type { Category } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
+import { isWithinDays } from "@/utils/period";
 import { useMemo, useState } from "react";
 
 export function useDashboard() {
@@ -30,9 +31,13 @@ export function useDashboard() {
         : expenses.filter((e) => e.category === filter),
     [expenses, filter],
   );
+  const recentExpenses = useMemo(
+    () => filtered.filter((e) => isWithinDays(e.date, 7)),
+    [filtered],
+  );
   const visible = useMemo(
-    () => (expanded ? filtered : filtered.slice(0, 4)),
-    [filtered, expanded],
+    () => (expanded ? recentExpenses : recentExpenses.slice(0, 4)),
+    [recentExpenses, expanded],
   );
   const budgetRemaining = dailyBudget - todaySpent;
 
@@ -55,6 +60,7 @@ export function useDashboard() {
     setShowBudget,
     maxCategory,
     filtered,
+    recentExpenses,
     visible,
   };
 }

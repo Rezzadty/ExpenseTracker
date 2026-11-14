@@ -18,11 +18,13 @@ import {
 import { Fonts, Radius, Spacing } from "@/constants/theme";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { useExpenses } from "@/hooks/use-expenses";
+import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function DashboardScreen() {
+  const router = useRouter();
   const { colors, categories } = useExpenses();
   const {
     dailyBudget,
@@ -40,6 +42,7 @@ export default function DashboardScreen() {
     setShowBudget,
     maxCategory,
     filtered,
+    recentExpenses,
     visible,
   } = useDashboard();
 
@@ -148,8 +151,32 @@ export default function DashboardScreen() {
                 style={{ paddingVertical: Spacing.xxl, alignItems: "center" }}
               >
                 <ThemedText type="body" color="textMuted">
-                  No expenses found
+                  No expenses in the last 7 days
                 </ThemedText>
+                {filtered.length > 0 && (
+                  <Pressable
+                    style={[
+                      styles.seeAllBtn,
+                      {
+                        backgroundColor: colors.surfaceRaised,
+                        marginTop: Spacing.md,
+                        paddingHorizontal: Spacing.lg,
+                      },
+                    ]}
+                    onPress={() => router.push("/(tabs)/expenses")}
+                  >
+                    <ThemedText
+                      type="body"
+                      color="accent"
+                      style={{
+                        fontFamily: Fonts.sansSemiBold,
+                        fontWeight: "600",
+                      }}
+                    >
+                      View All in Expenses ({filtered.length})
+                    </ThemedText>
+                  </Pressable>
+                )}
               </View>
             ) : (
               <>
@@ -158,7 +185,7 @@ export default function DashboardScreen() {
                     <CardExpenseItem item={item} />
                   </AnimatedListItem>
                 ))}
-                {filtered.length > 4 && (
+                {recentExpenses.length > 4 && (
                   <Pressable
                     style={[
                       styles.seeAllBtn,
@@ -174,7 +201,30 @@ export default function DashboardScreen() {
                         fontWeight: "600",
                       }}
                     >
-                      {expanded ? "Show Less" : `See All (${filtered.length})`}
+                      {expanded ? "Show Less" : `See All (${recentExpenses.length})`}
+                    </ThemedText>
+                  </Pressable>
+                )}
+                {filtered.length > recentExpenses.length && (
+                  <Pressable
+                    style={[
+                      styles.seeAllBtn,
+                      {
+                        backgroundColor: colors.surfaceRaised,
+                        marginTop: Spacing.sm,
+                      },
+                    ]}
+                    onPress={() => router.push("/(tabs)/expenses")}
+                  >
+                    <ThemedText
+                      type="body"
+                      color="accent"
+                      style={{
+                        fontFamily: Fonts.sansSemiBold,
+                        fontWeight: "600",
+                      }}
+                    >
+                      View All in Expenses ({filtered.length})
                     </ThemedText>
                   </Pressable>
                 )}
