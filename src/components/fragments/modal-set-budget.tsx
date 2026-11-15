@@ -39,7 +39,12 @@ export default function ModalSetBudget({
 
   return (
     <AnimatedModal visible={visible} onClose={handleClose}>
-      <View style={[styles.content, { backgroundColor: colors.surface }]}>
+      <View
+        style={[
+          styles.content,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+        ]}
+      >
         <View style={styles.header}>
           <ThemedText
             type="body"
@@ -92,6 +97,7 @@ const styles = StyleSheet.create({
   content: {
     borderRadius: Radius.card,
     padding: Spacing.lg,
+    borderWidth: 1,
   },
   header: {
     flexDirection: "row",

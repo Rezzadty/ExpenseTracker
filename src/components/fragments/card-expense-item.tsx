@@ -29,7 +29,16 @@ export default function CardExpenseItem({
   const hasActions = Boolean(onEdit || onDelete);
 
   return (
-    <View style={[styles.expenseRow, { backgroundColor: colors.surface }]}>
+    <View
+      style={[
+        styles.expenseRow,
+        {
+          backgroundColor: colors.surface,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+      ]}
+    >
       <View
         style={[styles.categoryBadge, { backgroundColor: catColor + "20" }]}
       >
@@ -45,9 +54,9 @@ export default function CardExpenseItem({
         </ThemedText>
       </View>
       <View style={{ flex: 1, marginLeft: Spacing.md }}>
-        <ThemedText type="body">{item.note}</ThemedText>
+        <ThemedText type="body">{item.note || item.category}</ThemedText>
         <ThemedText type="caption" color="textMuted">
-          {item.date}
+          {item.note ? `${item.category} • ${item.date}` : item.date}
         </ThemedText>
       </View>
       <View

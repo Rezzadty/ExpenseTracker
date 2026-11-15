@@ -3,12 +3,13 @@ import { ThemedText } from "@/components/elements";
 import {
   DEFAULT_CATEGORY_COLORS,
   Fonts,
+  Radius,
   Spacing,
   type Category,
 } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
 import { useMemo } from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 
 export type DonutSlice = {
@@ -20,11 +21,15 @@ export type DonutSlice = {
 export type CardAnalyticsDonutProps = {
   data: DonutSlice[];
   total: number;
+  selectedCategory?: Category | null;
+  onSelectCategory?: (category: Category) => void;
 };
 
 export default function CardAnalyticsDonut({
   data,
   total,
+  selectedCategory,
+  onSelectCategory,
 }: CardAnalyticsDonutProps) {
   const { formatAmount, colors, categoryColorMap } = useExpenses();
   const size = 200;
@@ -109,35 +114,59 @@ export default function CardAnalyticsDonut({
       </View>
 
       <View style={styles.legend}>
-        {data.map((slice) => (
-          <View key={slice.category} style={styles.legendItem}>
-            <View
+        {data.map((slice) => {
+          const isSelected = selectedCategory === slice.category;
+          const isDimmed = Boolean(selectedCategory && !isSelected);
+          return (
+            <Pressable
+              key={slice.category}
               style={[
-                styles.legendDot,
-                { backgroundColor: getCatColor(slice.category) },
+                styles.legendItem,
+                isDimmed && { opacity: 0.35 },
+                isSelected && {
+                  backgroundColor: colors.surfaceRaised,
+                  borderRadius: Radius.chip,
+                  paddingHorizontal: Spacing.xs,
+                  paddingVertical: 2,
+                },
               ]}
-            />
-            <ThemedText
-              type="caption"
-              color="textSecondary"
-              style={{ flex: 1 }}
+              onPress={() => onSelectCategory?.(slice.category)}
+              disabled={!onSelectCategory}
             >
-              {slice.category}
-            </ThemedText>
-            <ThemedText
-              type="caption"
-              color="textPrimary"
-              style={{
-                fontFamily: Fonts.sansSemiBold,
-                fontWeight: "600",
-                minWidth: 40,
-                textAlign: "right",
-              }}
-            >
-              {slice.pct.toFixed(0)}%
-            </ThemedText>
-          </View>
-        ))}
+              <View
+                style={[
+                  styles.legendDot,
+                  { backgroundColor: getCatColor(slice.category) },
+                ]}
+              />
+              <ThemedText
+                type="caption"
+                color={isSelected ? "textPrimary" : "textSecondary"}
+                style={[
+                  { flex: 1 },
+                  isSelected && {
+                    fontFamily: Fonts.sansBold,
+                    fontWeight: "700",
+                  },
+                ]}
+              >
+                {slice.category}
+              </ThemedText>
+              <ThemedText
+                type="caption"
+                color="textPrimary"
+                style={{
+                  fontFamily: Fonts.sansSemiBold,
+                  fontWeight: "600",
+                  minWidth: 40,
+                  textAlign: "right",
+                }}
+              >
+                {slice.pct.toFixed(0)}%
+              </ThemedText>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );

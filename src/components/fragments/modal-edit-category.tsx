@@ -62,7 +62,12 @@ export default function ModalEditCategory({
 
   return (
     <AnimatedModal visible={visible} onClose={onClose}>
-      <View style={[styles.modalCard, { backgroundColor: colors.surface }]}>
+      <View
+        style={[
+          styles.modalCard,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+        ]}
+      >
         <View style={styles.modalHeader}>
           <ThemedText
             type="body"
@@ -138,6 +143,7 @@ const styles = StyleSheet.create({
   modalCard: {
     borderRadius: Radius.card,
     padding: Spacing.lg,
+    borderWidth: 1,
   },
   modalHeader: {
     flexDirection: "row",

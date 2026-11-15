@@ -15,7 +15,7 @@ export default function ThemedView({
   const { colors } = useExpenses();
   return (
     <View
-      style={[{ backgroundColor: colors[surface] }, style, { backgroundColor: colors[surface] }]}
+      style={[{ backgroundColor: colors[surface] }, style]}
       {...props}
     />
   );

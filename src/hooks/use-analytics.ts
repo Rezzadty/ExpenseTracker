@@ -2,7 +2,12 @@ import { useMemo, useState } from "react";
 import type { Category } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
 import { useToday } from "@/hooks/use-today";
-import { getPeriodRange, shiftPeriod, isInPeriod, parseLocalDate, toLocalDateString } from "@/utils/period";
+import {
+  filterExpensesByTimeframe,
+  getPeriodRange,
+  shiftPeriod,
+  isInPeriod,
+} from "@/utils/period";
 
 export type Timeframe = "daily" | "weekly" | "monthly";
 
@@ -19,24 +24,7 @@ export function useAnalytics() {
     : null;
 
   const filteredExpenses = useMemo(() => {
-    if (timeframe === "daily") {
-      return expenses.filter((e) => e.date === today);
-    }
-
-    if (timeframe === "weekly") {
-      const todayDate = parseLocalDate(today);
-      const weekAgo = new Date(todayDate);
-      weekAgo.setDate(weekAgo.getDate() - 6);
-      const weekAgoStr = toLocalDateString(weekAgo);
-      return expenses.filter((e) => e.date >= weekAgoStr && e.date <= today);
-    }
-
-    // Monthly: use period range (inclusive start, exclusive end)
-    if (activeRange) {
-      return expenses.filter((e) => isInPeriod(e.date, activeRange));
-    }
-
-    return expenses;
+    return filterExpensesByTimeframe(expenses, timeframe, today, activeRange);
   }, [expenses, timeframe, today, activeRange]);
 
   const totalSpent = useMemo(

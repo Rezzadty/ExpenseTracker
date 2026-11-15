@@ -9,12 +9,7 @@ import {
 import CardExpenseItem from "@/components/fragments/card-expense-item";
 import ModalConfirmDelete from "@/components/fragments/modal-confirm-delete";
 import ModalEditExpense from "@/components/fragments/modal-edit-expense";
-import {
-  Fonts,
-  Radius,
-  Spacing,
-  type Category,
-} from "@/constants/theme";
+import { Fonts, Radius, Spacing, type Category } from "@/constants/theme";
 import { useExpenses } from "@/hooks/use-expenses";
 import type { Expense } from "@/types/expense";
 import { useMemo, useState } from "react";
@@ -24,20 +19,29 @@ export type CardExpensesSectionProps = {
   expenses: Expense[];
   onDelete: (id: string) => void;
   onEdit?: (item: Expense) => void;
+  periodLabel?: string;
+  initialCategoryFilter?: Category;
 };
 
 export default function CardExpensesSection({
   expenses,
   onDelete,
   onEdit,
+  periodLabel,
+  initialCategoryFilter,
 }: CardExpensesSectionProps) {
-  const { formatAmount, categories, updateExpense } = useExpenses();
-  const [filter, setFilter] = useState<"All" | Category>("All");
+  const { formatAmount, categories, updateExpense, colors } = useExpenses();
+  const [filter, setFilter] = useState<"All" | Category>(
+    initialCategoryFilter ?? "All",
+  );
   const [search, setSearch] = useState("");
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
-  const filterOptions = useMemo(() => ["All", ...categories.map((c) => c.name)], [categories]);
+  const filterOptions = useMemo(
+    () => ["All", ...categories.map((c) => c.name)],
+    [categories],
+  );
 
   const handleDeleteConfirm = () => {
     if (pendingDeleteId) {
@@ -83,9 +87,13 @@ export default function CardExpensesSection({
 
   return (
     <>
-      <ThemedView surface="surface" style={styles.summaryCard}>
+      <ThemedView
+        surface="surface"
+        style={[styles.summaryCard, { borderColor: colors.border }]}
+      >
         <ThemedText type="caption" color="textSecondary">
           {filtered.length} transaction{filtered.length !== 1 ? "s" : ""}
+          {periodLabel && ` • ${periodLabel}`}
         </ThemedText>
         <ThemedText
           type="body"
@@ -121,7 +129,18 @@ export default function CardExpensesSection({
       {filtered.length === 0 ? (
         <View style={styles.empty}>
           <ThemedText type="body" color="textMuted">
-            No expenses found
+            {periodLabel && periodLabel !== "All time"
+              ? `No expenses in ${periodLabel} `
+              : "No expenses found"}
+            {(filter !== "All" || search.trim()) && (
+              <ThemedText
+                type="caption"
+                color="textMuted"
+                style={{ marginTop: Spacing.md }}
+              >
+                Try clearing filters or search
+              </ThemedText>
+            )}
           </ThemedText>
         </View>
       ) : (
@@ -129,7 +148,9 @@ export default function CardExpensesSection({
           <AnimatedListItem key={item.id} index={i}>
             <CardExpenseItem
               item={item}
-              onEdit={(target) => (onEdit ? onEdit(target) : setEditingExpense(target))}
+              onEdit={(target) =>
+                onEdit ? onEdit(target) : setEditingExpense(target)
+              }
               onDelete={(id) => setPendingDeleteId(id)}
             />
           </AnimatedListItem>
@@ -160,6 +181,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.card,
     padding: Spacing.lg,
     marginBottom: Spacing.base,
+    borderWidth: 1,
   },
   chipRow: {
     flexDirection: "row",
@@ -169,6 +191,8 @@ const styles = StyleSheet.create({
   },
   empty: {
     paddingVertical: Spacing.xxl,
+    paddingHorizontal: Spacing.xl,
     alignItems: "center",
+    marginTop: Spacing.xxl,
   },
 });

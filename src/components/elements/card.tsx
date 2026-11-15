@@ -17,10 +17,19 @@ export default function Card({
 }: CardProps) {
   const { colors } = useExpenses();
 
+  const cardStyle = [
+    {
+      backgroundColor: colors[surface],
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    style,
+  ];
+
   if (!animated) {
     return (
       <Animated.View
-        style={[{ backgroundColor: colors[surface] }, style]}
+        style={cardStyle}
         {...props}
       />
     );
@@ -30,7 +39,7 @@ export default function Card({
     <Animated.View
       entering={FadeInDown.duration(280).springify().damping(20).stiffness(180)}
       layout={LinearTransition.springify().damping(20).stiffness(180)}
-      style={[{ backgroundColor: colors[surface] }, style]}
+      style={cardStyle}
       {...props}
     />
   );
