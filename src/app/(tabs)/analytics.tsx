@@ -9,18 +9,16 @@ import {
   CardAnalyticsDonut,
   CardAnalyticsTrend,
   CardCategoryProgress,
-  CardExpenseItem,
   Navbar,
 } from "@/components/fragments";
 import { Radius, Spacing, Fonts, type Category } from "@/constants/theme";
 import { useAnalytics, type Timeframe } from "@/hooks/use-analytics";
 import { useExpenses } from "@/hooks/use-expenses";
-import { formatHeaderDate } from "@/utils/period";
-import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useToday } from "@/hooks/use-today";
+import { useRouter } from "expo-router";
+import { parseLocalDate, toLocalDateString } from "@/utils/period";
+import { ScrollView, StyleSheet, View, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const PAGE_SIZE = 10;
 
 const TIMEFRAMES: { label: string; value: Timeframe }[] = [
   { label: "Daily", value: "daily" },
@@ -43,8 +41,29 @@ function formatMonthKey(key: string): string {
   return `${monthNames[month - 1]} ${year}`;
 }
 
+// Convert periodKey to the format expected by Expenses screen
+function getPeriodForExpenses(timeframe: Timeframe, periodKey: string | null, today: string): string {
+  if (timeframe === "monthly" && periodKey) {
+    return periodKey; // YYYY-MM
+  }
+  if (timeframe === "weekly") {
+    // For weekly, return the start of the current week (Sunday)
+    const todayDate = parseLocalDate(today);
+    const dayOfWeek = todayDate.getDay(); // 0 = Sunday
+    const weekStart = new Date(todayDate);
+    weekStart.setDate(todayDate.getDate() - dayOfWeek);
+    return toLocalDateString(weekStart);
+  }
+  if (timeframe === "daily") {
+    return today; // YYYY-MM-DD
+  }
+  return today;
+}
+
 export default function AnalyticsScreen() {
   const { formatAmount, colors } = useExpenses();
+  const today = useToday();
+  const router = useRouter();
   const {
     timeframe,
     setTimeframe,
@@ -61,9 +80,6 @@ export default function AnalyticsScreen() {
     maxCategory,
   } = useAnalytics();
 
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-
   const isMonthly = timeframe === "monthly";
   const periodLabel = isMonthly && periodKey
     ? formatMonthKey(periodKey)
@@ -71,14 +87,10 @@ export default function AnalyticsScreen() {
 
   const handleSelectTimeframe = (value: Timeframe) => {
     setTimeframe(value);
-    setSelectedCategory(null);
-    setVisibleCount(PAGE_SIZE);
   };
 
   const handlePrevMonth = () => {
     if (!periodKey || !canGoPrev) return;
-    setSelectedCategory(null);
-    setVisibleCount(PAGE_SIZE);
     const [year, month] = periodKey.split("-").map(Number);
     const date = new Date(year, month - 2, 1); // previous month
     setPeriodKey(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`);
@@ -86,49 +98,19 @@ export default function AnalyticsScreen() {
 
   const handleNextMonth = () => {
     if (!periodKey || !canGoNext) return;
-    setSelectedCategory(null);
-    setVisibleCount(PAGE_SIZE);
     const [year, month] = periodKey.split("-").map(Number);
     const date = new Date(year, month, 1); // next month
     setPeriodKey(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`);
   };
 
-  const handleToggleCategory = (cat: Category) => {
-    setSelectedCategory((prev) => (prev === cat ? null : cat));
-    setVisibleCount(PAGE_SIZE);
+  const navigateToExpenses = (category?: Category) => {
+    const period = getPeriodForExpenses(timeframe, periodKey, today);
+    const params = new URLSearchParams();
+    params.set("timeframe", timeframe);
+    params.set("period", period);
+    if (category) params.set("category", category);
+    router.push(`/(tabs)/expenses?${params.toString()}`);
   };
-
-  const transactions = useMemo(() => {
-    const list = selectedCategory
-      ? filteredExpenses.filter((e) => e.category === selectedCategory)
-      : filteredExpenses;
-    return [...list].sort((a, b) => b.date.localeCompare(a.date));
-  }, [filteredExpenses, selectedCategory]);
-
-  const visibleTransactions = useMemo(() => {
-    return transactions.slice(0, visibleCount);
-  }, [transactions, visibleCount]);
-
-  const groupedTransactions = useMemo(() => {
-    if (timeframe === "daily") return [];
-    const groups: { date: string; formattedDate: string; items: typeof visibleTransactions }[] = [];
-    const map = new Map<string, typeof visibleTransactions>();
-
-    for (const item of visibleTransactions) {
-      let group = map.get(item.date);
-      if (!group) {
-        group = [];
-        map.set(item.date, group);
-        groups.push({
-          date: item.date,
-          formattedDate: formatHeaderDate(item.date),
-          items: group,
-        });
-      }
-      group.push(item);
-    }
-    return groups;
-  }, [visibleTransactions, timeframe]);
 
   const getChangeColorKey = (pct: number) => (pct >= 0 ? "accent" : "danger");
   const getChangePrefix = (pct: number) => (pct >= 0 ? "+" : "");
@@ -248,8 +230,8 @@ export default function AnalyticsScreen() {
                 <CardAnalyticsDonut
                   data={slices}
                   total={totalSpent}
-                  selectedCategory={selectedCategory}
-                  onSelectCategory={handleToggleCategory}
+                  selectedCategory={null}
+                  onSelectCategory={(cat) => navigateToExpenses(cat)}
                 />
               )}
             </ThemedView>
@@ -269,81 +251,38 @@ export default function AnalyticsScreen() {
                   </ThemedText>
                 </View>
               ) : (
-                (Object.entries(byCategory) as [Category, number][]).map(
-                  ([cat, amt]) => (
-                    <CardCategoryProgress
-                      key={cat}
-                      category={cat}
-                      amount={amt}
-                      max={maxCategory}
-                      selected={selectedCategory === cat}
-                      onPress={() => handleToggleCategory(cat)}
-                    />
-                  ),
-                )
-              )}
-            </ThemedView>
-
-            <ThemedView surface="surface" style={[styles.card, { borderColor: colors.border }]}>
-              <View style={styles.transactionsHeader}>
-                <ThemedText type="sectionTitle" color="textSecondary">
-                  Transactions
-                </ThemedText>
-                {selectedCategory && (
-                  <Chip
-                    label={`${selectedCategory} ✕`}
-                    selected
-                    onPress={() => setSelectedCategory(null)}
-                  />
-                )}
-              </View>
-
-              {transactions.length === 0 ? (
-                <View style={styles.empty}>
-                  <ThemedText type="body" color="textMuted">
-                    No transactions in this period
-                  </ThemedText>
-                </View>
-              ) : timeframe === "daily" ? (
-                visibleTransactions.map((item) => (
-                  <CardExpenseItem key={item.id} item={item} />
-                ))
-              ) : (
-                groupedTransactions.map((group) => (
-                  <View key={group.date} style={styles.dateGroup}>
-                    <ThemedText
-                      type="caption"
-                      color="textSecondary"
-                      style={styles.dateHeader}
-                    >
-                      {group.formattedDate}
-                    </ThemedText>
-                    {group.items.map((item) => (
-                      <CardExpenseItem key={item.id} item={item} />
-                    ))}
-                  </View>
-                ))
-              )}
-
-              {transactions.length > visibleCount && (
-                <Pressable
-                  style={[
-                    styles.seeAllBtn,
-                    { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderWidth: 1 },
-                  ]}
-                  onPress={() => setVisibleCount((v) => v + PAGE_SIZE)}
-                >
-                  <ThemedText
-                    type="body"
-                    color="accent"
-                    style={{
-                      fontFamily: Fonts.sansSemiBold,
-                      fontWeight: "600",
-                    }}
+                <>
+                  {(Object.entries(byCategory) as [Category, number][]).map(
+                    ([cat, amt]) => (
+                      <CardCategoryProgress
+                        key={cat}
+                        category={cat}
+                        amount={amt}
+                        max={maxCategory}
+                        selected={false}
+                        onPress={() => navigateToExpenses(cat)}
+                      />
+                    ),
+                  )}
+                  <Pressable
+                    style={[
+                      styles.seeAllBtn,
+                      { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderWidth: 1 },
+                    ]}
+                    onPress={() => navigateToExpenses()}
                   >
-                    Show more ({transactions.length - visibleCount} remaining)
-                  </ThemedText>
-                </Pressable>
+                    <ThemedText
+                      type="body"
+                      color="accent"
+                      style={{
+                        fontFamily: Fonts.sansSemiBold,
+                        fontWeight: "600",
+                      }}
+                    >
+                      See all transactions
+                    </ThemedText>
+                  </Pressable>
+                </>
               )}
             </ThemedView>
 

@@ -59,7 +59,6 @@ export function useDashboard() {
     showBudget,
     setShowBudget,
     maxCategory,
-    filtered,
     recentExpenses,
     visible,
   };

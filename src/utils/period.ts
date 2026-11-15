@@ -96,3 +96,85 @@ export function formatHeaderDate(dateString: string): string {
   if (!year || !month || !day || month < 1 || month > 12) return dateString;
   return `${day} ${MONTH_NAMES_SHORT[month - 1]} ${year}`;
 }
+
+export function getPeriodRangeForTimeframe(
+  dateString: string,
+  timeframe: "daily" | "weekly" | "monthly",
+  startDay = 1,
+): { start: string; endExclusive: string; label: string } {
+  const date = parseLocalDate(dateString);
+
+  if (timeframe === "daily") {
+    const label = formatHeaderDate(dateString);
+    return { start: dateString, endExclusive: dateString, label };
+  }
+
+  if (timeframe === "weekly") {
+    // Week starts on Sunday (matching existing convention in filterExpensesByTimeframe)
+    const dayOfWeek = date.getDay(); // 0 = Sunday
+    const weekStart = new Date(date);
+    weekStart.setDate(date.getDate() - dayOfWeek);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    const startStr = toLocalDateString(weekStart);
+    const endStr = toLocalDateString(weekEnd);
+    const label = `${toLocalDateString(weekStart)} – ${toLocalDateString(weekEnd)}`;
+    return { start: startStr, endExclusive: endStr, label };
+  }
+
+  // monthly
+  const range = getPeriodRange(dateString, startDay);
+  return { start: range.start, endExclusive: range.endExclusive, label: range.label };
+}
+
+export function shiftPeriodByTimeframe(
+  dateString: string,
+  timeframe: "daily" | "weekly" | "monthly",
+  delta: number,
+  startDay = 1,
+): string {
+  const date = parseLocalDate(dateString);
+
+  if (timeframe === "daily") {
+    const newDate = new Date(date);
+    newDate.setDate(date.getDate() + delta);
+    return toLocalDateString(newDate);
+  }
+
+  if (timeframe === "weekly") {
+    // Shift by weeks (7 days * delta)
+    const newDate = new Date(date);
+    newDate.setDate(date.getDate() + delta * 7);
+    return toLocalDateString(newDate);
+  }
+
+  // monthly - use existing shiftPeriod
+  const range = getPeriodRange(dateString, startDay);
+  const shifted = shiftPeriod(range, delta);
+  return `${shifted.key}-01`;
+}
+
+export function canNavigateNext(
+  dateString: string,
+  timeframe: "daily" | "weekly" | "monthly",
+  today: string,
+): boolean {
+  if (timeframe === "monthly") {
+    const [year, month] = dateString.split("-").map(Number);
+    const [todayYear, todayMonth] = today.split("-").map(Number);
+    return year < todayYear || (year === todayYear && month < todayMonth);
+  }
+  // For daily/weekly, compare the end of the period with today
+  const { endExclusive } = getPeriodRangeForTimeframe(dateString, timeframe);
+  return endExclusive <= today;
+}
+
+export function canNavigatePrev(
+  dateString: string,
+  timeframe: "daily" | "weekly" | "monthly",
+  oldestExpenseDate: string | null,
+): boolean {
+  if (!oldestExpenseDate) return false;
+  const { start } = getPeriodRangeForTimeframe(dateString, timeframe);
+  return start > oldestExpenseDate;
+}
